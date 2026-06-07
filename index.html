@@ -85,6 +85,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 }
 .s-btn:hover{background:var(--bg-hover);color:var(--text1)}
 .s-btn.active{color:var(--accent);border-color:var(--accent)}
+.s-btn.play{color:var(--accent);border-color:var(--accent);font-size:.9em}
+.s-btn.play.running{background:var(--accent);color:#fff;border-color:var(--accent)}
 .layer-disp{color:var(--accent);font-family:monospace;font-size:.8em;min-width:66px;text-align:center;flex-shrink:0}
 .sim-sp{flex:1}
 
@@ -159,6 +161,9 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   <div class="rsz" id="rsz"></div>
   <div class="right-panel" id="right-panel">
     <div class="sim-bar">
+      <button class="s-btn play" id="btn-play" onclick="playAnim()" title="Abspielen">▶</button>
+      <button class="s-btn" id="btn-stop" onclick="stopAnim()" title="Stop">■</button>
+      <div style="width:1px;height:16px;background:var(--border);margin:0 3px;flex-shrink:0"></div>
       <span class="sim-lbl">LAYER</span>
       <button class="s-btn" onclick="layerFirst()">|◄</button>
       <button class="s-btn" onclick="layerStep(-10)">«</button>
@@ -168,12 +173,17 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <button class="s-btn" onclick="layerStep(10)">»</button>
       <button class="s-btn" onclick="layerLast()">►|</button>
       <button class="s-btn active" id="btn-cumul" onclick="toggleCumul()">CUM</button>
-      <div class="sim-sp"></div>
     </div>
     <div class="slider-row">
       <span class="sim-lbl">Z</span>
       <input type="range" id="layer-slider" min="1" max="100" value="100" oninput="sliderInput(this.value)">
       <span class="layer-z" id="layer-z-val">–</span>
+      <div style="width:1px;height:14px;background:var(--border);margin:0 6px;flex-shrink:0"></div>
+      <span class="sim-lbl">Geschw.</span>
+      <input type="range" id="speed-slider" min="1" max="100" value="50"
+             style="width:80px;accent-color:var(--accent);cursor:pointer;height:14px;flex-shrink:0"
+             oninput="document.getElementById('speed-val').textContent=this.value">
+      <span id="speed-val" style="color:var(--accent);font-family:monospace;font-size:.72em;min-width:24px;text-align:right;flex-shrink:0">50</span>
     </div>
     <div class="sim-wrap" id="sim-wrap">
       <canvas id="sim-canvas"></canvas>
@@ -241,6 +251,9 @@ var MAXLAYER    = 0;
 var CUMULATIVE  = true;
 var SHOW_TRAVEL = false;
 var SHOW_TUBES  = true;
+var PLAYING     = false;
+var PLAY_TIMER  = null;
+var PLAY_RAF    = null;
 
 // ═══════════════════════════════════════════════════════════
 //  GCODE-PREVIEW
@@ -373,6 +386,7 @@ require(['vs/editor/editor.main'], function () {
 // ═══════════════════════════════════════════════════════════
 function runSim() {
   if (!window.ED || !PREVIEW) return;
+  stopAnim();
   var text  = ED.getValue();
   var lines = ED.getModel().getLineCount();
   document.getElementById('s-lines').textContent = lines.toLocaleString('de');
@@ -438,10 +452,67 @@ function updateStats() {
 // ═══════════════════════════════════════════════════════════
 //  LAYER CONTROLS
 // ═══════════════════════════════════════════════════════════
-function layerStep(d)   { setLayerTo(CURLAYER + d); }
-function layerFirst()   { setLayerTo(1); }
-function layerLast()    { setLayerTo(MAXLAYER); }
-function sliderInput(v) { setLayerTo(parseInt(v)); }
+function layerStep(d)   { stopAnim(); setLayerTo(CURLAYER + d); }
+function layerFirst()   { stopAnim(); setLayerTo(1); }
+function layerLast()    { stopAnim(); setLayerTo(MAXLAYER); }
+function sliderInput(v) { stopAnim(); setLayerTo(parseInt(v)); }
+
+function playAnim() {
+  if (PLAYING) return;
+  if (!PREVIEW || !MAXLAYER) return;
+  // Start from layer 1 if at end
+  if (CURLAYER >= MAXLAYER) {
+    CURLAYER = 0;
+    document.getElementById('layer-slider').value = 0;
+  }
+  PLAYING = true;
+  document.getElementById('btn-play').classList.add('running');
+  playStep();
+}
+
+function stopAnim() {
+  if (!PLAYING && PLAY_TIMER === null && PLAY_RAF === null) return;
+  PLAYING = false;
+  if (PLAY_TIMER !== null) { clearTimeout(PLAY_TIMER); PLAY_TIMER = null; }
+  if (PLAY_RAF   !== null) { cancelAnimationFrame(PLAY_RAF); PLAY_RAF = null; }
+  var pb = document.getElementById('btn-play');
+  if (pb) pb.classList.remove('running');
+}
+
+function playStep() {
+  if (!PLAYING) return;
+  if (CURLAYER >= MAXLAYER) { stopAnim(); return; }
+
+  CURLAYER++;
+  document.getElementById('layer-slider').value = CURLAYER;
+  PREVIEW.endLayer      = CURLAYER;
+  PREVIEW.singleLayerMode = !CUMULATIVE;
+  PREVIEW.render();
+
+  // Sync layer display
+  document.getElementById('layer-disp').textContent = CURLAYER + ' / ' + MAXLAYER;
+  var pl = PREVIEW.parser.layers[CURLAYER - 1];
+  if (pl) {
+    var zStr = pl.z.toFixed(3) + ' mm';
+    document.getElementById('layer-z-val').textContent = zStr;
+    document.getElementById('sim-overlay').textContent = 'Layer ' + CURLAYER + ' / ' + MAXLAYER + '   Z = ' + zStr;
+    // Scroll editor to the layer's start line
+    if (window.ED) {
+      var lineNum = pl.lineNumber + 1; // gcode-preview is 0-based
+      ED.revealLineInCenter(lineNum);
+      ED.setPosition({ lineNumber: lineNum, column: 1 });
+    }
+  }
+
+  var speed = parseInt(document.getElementById('speed-slider').value);
+  if (speed >= 100) {
+    PLAY_RAF = requestAnimationFrame(playStep);
+  } else {
+    // speed 1 → 990ms, speed 99 → 10ms, speed 100 → rAF
+    var delay = Math.round((100 - speed) * 10);
+    PLAY_TIMER = setTimeout(function() { PLAY_TIMER = null; playStep(); }, delay);
+  }
+}
 
 function toggleCumul() {
   CUMULATIVE = !CUMULATIVE;
