@@ -263,9 +263,12 @@ require(['vs/editor/editor.main'], function () {
     suggestOnTriggerCharacters: false, mouseWheelZoom: true,
   });
 
+  var simDebounce;
   ED.onDidChangeModelContent(function () {
     document.getElementById('s-lines').textContent =
       ED.getModel().getLineCount().toLocaleString('de');
+    clearTimeout(simDebounce);
+    simDebounce = setTimeout(runSim, 800);
   });
   ED.onDidChangeCursorPosition(function (e) {
     document.getElementById('s-cur').textContent =
