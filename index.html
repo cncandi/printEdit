@@ -22,6 +22,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .hdr-btn:hover{border-color:var(--txt3);color:var(--txt)}
 .hdr-btn.acc{border-color:var(--acc);color:var(--acc)}
 .hdr-btn.acc:hover{background:rgba(240,85,0,.12)}
+.hdr-btn.active{border-color:var(--grn);color:var(--grn)}
+.hdr-btn.active:hover{background:rgba(63,185,80,.10)}
 .hdr-spacer{flex:1}
 #hdr-filename{color:var(--txt3);font-size:.76em;font-family:monospace;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -94,6 +96,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
   <button class="hdr-btn" onclick="saveFile()">💾 Speichern</button>
   <div class="hdr-sep"></div>
   <button class="hdr-btn acc" onclick="runSim()">▶ Simulieren</button>
+  <button class="hdr-btn active" onclick="toggleTubes()" id="btn-tubes">Tubes: ein</button>
   <button class="hdr-btn" onclick="toggleTravel()" id="btn-travel">Travel: aus</button>
   <div class="hdr-spacer"></div>
   <span id="hdr-filename">Keine Datei</span>
@@ -175,6 +178,7 @@ var CURLAYER   = 0;      // current end-layer (0-based)
 var MAXLAYER   = 0;      // total layer count
 var CUMULATIVE = true;   // show all layers up to CURLAYER
 var SHOW_TRAVEL = false;
+var SHOW_TUBES  = true;
 
 // ═══════════════════════════════════════════════════════════
 //  GCODE-PREVIEW INIT
@@ -194,6 +198,9 @@ function initPreview() {
     travelColor:          '#2a3a55',
     backgroundColor:      '#080c12',
     renderTravel:         SHOW_TRAVEL,
+    renderTubes:          SHOW_TUBES,
+    extrusionWidth:       0.6,
+    lineHeight:           0.2,
     buildVolume:          { x: 220, y: 220, z: 250 },
     initialCameraPosition:[0, 150, 200],
   });
@@ -384,6 +391,15 @@ function toggleCumul() {
   updateLayerView();
 }
 
+
+function toggleTubes() {
+  SHOW_TUBES = !SHOW_TUBES;
+  var btn = document.getElementById('btn-tubes');
+  btn.textContent = 'Tubes: ' + (SHOW_TUBES ? 'ein' : 'aus');
+  btn.classList.toggle('active', SHOW_TUBES);
+  initPreview();
+  runSim();
+}
 function toggleTravel() {
   if (!PREVIEW) return;
   SHOW_TRAVEL = !SHOW_TRAVEL;
