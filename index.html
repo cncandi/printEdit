@@ -62,7 +62,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* ── Main ────────────────────────────────────────────────── */
 .main{display:flex;height:calc(100vh - 57px);overflow:hidden}
-.editor-panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.editor-panel{flex:1;min-width:0;display:flex;flex-direction:column;min-width:200px}
 #editor-wrap{flex:1;min-height:0}
 
 /* ── Resize handle ───────────────────────────────────────── */
@@ -70,7 +70,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .rsz:hover,.rsz.active{background:var(--accent)}
 
 /* ── Right panel ─────────────────────────────────────────── */
-.right-panel{width:440px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border)}
+.right-panel{flex:1;min-width:260px;display:flex;flex-direction:column;border-left:1px solid var(--border)}
 
 /* ── Sim toolbar ─────────────────────────────────────────── */
 .sim-bar{
@@ -106,6 +106,9 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .sim-loading.on{display:flex}
 
 /* ── Opt panel ───────────────────────────────────────────── */
+.tube-row{height:28px;background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0;font-family:monospace;font-size:.72em;color:var(--text3)}
+.tube-row input[type=range]{flex:1;accent-color:var(--accent);cursor:pointer;height:14px}
 .opt-panel{border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;padding:7px}
 .opt-title{color:var(--text3);font-size:.68em;font-family:monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
@@ -190,6 +193,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <div class="sim-overlay" id="sim-overlay"></div>
       <div class="sim-loading" id="sim-loading">Simuliere…</div>
     </div>
+    <div class="tube-row">
+      <span>Tube-Dicke</span>
+      <input type="range" id="tube-slider" min="1" max="30" value="6"
+             oninput="document.getElementById('tube-val').textContent=(this.value/10).toFixed(1)+' mm';applyTubeWidth()">
+      <span id="tube-val" style="color:var(--accent);min-width:40px;text-align:right">0.6 mm</span>
+    </div>
     <div class="opt-panel">
       <div class="opt-title">Optimierungen</div>
       <div class="opt-grid">
@@ -254,6 +263,7 @@ var SHOW_TUBES  = true;
 var PLAYING     = false;
 var PLAY_TIMER  = null;
 var PLAY_RAF    = null;
+var TUBE_WIDTH  = 0.6;
 
 // ═══════════════════════════════════════════════════════════
 //  GCODE-PREVIEW
@@ -262,28 +272,67 @@ function initPreview() {
   var canvas = document.getElementById('sim-canvas');
   if (PREVIEW) { PREVIEW.dispose(); PREVIEW.cancelAnimation(); PREVIEW = null; }
   var isDark = THEME === 'krl-dark';
+  // Ensure canvas has layout dimensions
+  var wrap = document.getElementById('sim-wrap');
+  canvas.style.width  = wrap.offsetWidth  + 'px';
+  canvas.style.height = wrap.offsetHeight + 'px';
   PREVIEW = GCodePreview.init({
     canvas:               canvas,
     extrusionColor:       '#f05500',
-    topLayerColor:        '#ffaa44',
+    topLayerColor:        '#ff8800',
     lastSegmentColor:     '#ffffff',
-    travelColor:          isDark ? '#2a3a55' : '#aaaacc',
+    travelColor:          isDark ? '#334466' : '#aaaacc',
     backgroundColor:      isDark ? '#141414' : '#E8E8E8',
     renderTravel:         SHOW_TRAVEL,
     renderTubes:          SHOW_TUBES,
-    extrusionWidth:       0.6,
-    lineHeight:           0.2,
+    extrusionWidth:       TUBE_WIDTH,
+    lineHeight:           TUBE_WIDTH * 0.33,
     buildVolume:          { x: 220, y: 220, z: 250 },
-    initialCameraPosition:[0, 150, 200],
+    initialCameraPosition:[0, 200, 280],
   });
   PREVIEW.resize();
+  // Keyboard: arrow keys pan, +/- zoom
+  PREVIEW.controls.listenToKeyEvents(document);
+  document.removeEventListener('keydown', onSimKey, false);
+  document.addEventListener('keydown', onSimKey, false);
+}
+
+function onSimKey(e) {
+  if (!PREVIEW) return;
+  var factor;
+  if (e.key === '+' || e.key === '=' || e.key === 'NumpadAdd') {
+    factor = 0.85;
+  } else if (e.key === '-' || e.key === 'NumpadSubtract') {
+    factor = 1.18;
+  } else return;
+  e.preventDefault();
+  var cam = PREVIEW.camera, tgt = PREVIEW.controls.target;
+  cam.position.sub(tgt).multiplyScalar(factor).add(tgt);
+  PREVIEW.controls.update();
+}
+
+function applyTubeWidth() {
+  TUBE_WIDTH = parseFloat(document.getElementById('tube-slider').value) / 10;
+  initPreview();
+  runSim();
 }
 
 function previewReady() {
-  initPreview();
-  runSim();
-  var ro = new ResizeObserver(function() { if (PREVIEW) PREVIEW.resize(); });
-  ro.observe(document.getElementById('sim-wrap'));
+  // Delay to ensure DOM layout is complete
+  setTimeout(function() {
+    initPreview();
+    runSim();
+    var ro = new ResizeObserver(function() {
+      if (PREVIEW) {
+        var wrap = document.getElementById('sim-wrap');
+        var canvas = document.getElementById('sim-canvas');
+        canvas.style.width  = wrap.offsetWidth  + 'px';
+        canvas.style.height = wrap.offsetHeight + 'px';
+        PREVIEW.resize();
+      }
+    });
+    ro.observe(document.getElementById('sim-wrap'));
+  }, 100);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -395,6 +444,7 @@ function runSim() {
   setTimeout(function () {
     try {
       PREVIEW.clear();
+      PREVIEW.resize();
       PREVIEW.processGCode(text);
       MAXLAYER = PREVIEW.parser.layers.length;
       CURLAYER = MAXLAYER;
