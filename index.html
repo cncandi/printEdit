@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>printEdit – Datentechnik Reitz</title>
+<style>
+:root {
+  --bg0:#0d1117; --bg1:#161b22; --bg2:#21262d; --bg3:#30363d; --bg4:#13181f;
+  --acc:#f05500; --grn:#3fb950; --red:#f85149;
+  --bdr:#30363d; --txt:#e6edf3; --txt2:#8b949e; --txt3:#484f58;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg0);color:var(--txt)}
+
+/* ── Header ─────────────────────────────────────────────── */
+.hdr{height:40px;background:var(--bg1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0}
+.hdr-logo{color:var(--acc);font-weight:700;font-size:.92em;letter-spacing:1.5px;font-family:monospace}
+.hdr-brand{color:var(--txt3);font-size:.72em;margin-right:6px}
+.hdr-sep{width:1px;height:18px;background:var(--bdr);flex-shrink:0}
+.hdr-btn{background:var(--bg2);border:1px solid var(--bdr);color:var(--txt2);border-radius:3px;padding:0 11px;cursor:pointer;font-size:.78em;font-family:inherit;height:26px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
+.hdr-btn:hover{border-color:var(--txt3);color:var(--txt)}
+.hdr-btn.acc{border-color:var(--acc);color:var(--acc)}
+.hdr-btn.acc:hover{background:rgba(240,85,0,.12)}
+.hdr-btn.grn{border-color:var(--grn);color:var(--grn)}
+.hdr-btn.grn:hover{background:rgba(63,185,80,.12)}
+.hdr-spacer{flex:1}
+#hdr-filename{color:var(--txt3);font-size:.76em;font-family:monospace;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Status bar ─────────────────────────────────────────── */
+.status{height:24px;background:var(--bg4);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:14px;font-size:.73em;color:var(--txt3);font-family:monospace;flex-shrink:0;overflow:hidden}
+.status .v{color:var(--txt2)}
+.status .va{color:var(--acc)}
+.status .vg{color:var(--grn)}
+#s-msg{color:var(--grn);margin-left:auto;white-space:nowrap}
+
+/* ── Main layout ─────────────────────────────────────────── */
+.main{display:flex;height:calc(100vh - 64px);overflow:hidden}
+.editor-panel{flex:1;min-width:0;display:flex;flex-direction:column}
+#editor-wrap{flex:1;min-height:0}
+
+/* ── Resize handle ───────────────────────────────────────── */
+.rsz{width:4px;background:var(--bg3);cursor:col-resize;flex-shrink:0;transition:background .15s}
+.rsz:hover{background:var(--acc)}
+
+/* ── Right panel ─────────────────────────────────────────── */
+.right-panel{width:400px;flex-shrink:0;display:flex;flex-direction:column;border-left:2px solid var(--acc)}
+
+/* ── Sim toolbar ─────────────────────────────────────────── */
+.sim-bar{height:34px;background:var(--bg1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 8px;gap:5px;flex-shrink:0}
+.sim-lbl{color:var(--txt3);font-size:.72em;font-family:monospace;letter-spacing:.5px}
+.s-btn{background:var(--bg2);border:1px solid var(--bdr);color:var(--txt2);border-radius:3px;padding:0 7px;cursor:pointer;font-size:.78em;font-family:monospace;height:22px;display:flex;align-items:center;flex-shrink:0}
+.s-btn:hover{color:var(--txt);border-color:var(--txt3)}
+.s-btn.active{border-color:var(--acc);color:var(--acc)}
+.layer-disp{color:var(--acc);font-family:monospace;font-size:.82em;min-width:72px;text-align:center;flex-shrink:0}
+.sim-sp{flex:1}
+
+/* ── Canvas ──────────────────────────────────────────────── */
+#sim-canvas{display:block;flex:1;min-height:0;background:#080c12;cursor:crosshair}
+
+/* ── Canvas info overlay ─────────────────────────────────── */
+.canvas-wrap{flex:1;position:relative;min-height:0;display:flex}
+#canvas-info{position:absolute;top:6px;left:8px;font-family:monospace;font-size:.72em;color:var(--txt3);pointer-events:none;line-height:1.7}
+
+/* ── Opt panel ───────────────────────────────────────────── */
+.opt-panel{border-top:1px solid var(--bdr);background:var(--bg1);flex-shrink:0;padding:8px}
+.opt-title{color:var(--txt3);font-size:.7em;font-family:monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.opt-btn{background:var(--bg2);border:1px solid var(--bdr);color:var(--txt2);border-radius:3px;padding:6px 6px;cursor:pointer;font-size:.74em;font-family:monospace;text-align:left;line-height:1.3}
+.opt-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ── Drop overlay ────────────────────────────────────────── */
+.drop-ov{display:none;position:fixed;inset:0;background:rgba(240,85,0,.12);border:3px dashed var(--acc);z-index:999;align-items:center;justify-content:center;font-size:1.3em;color:var(--acc);font-family:monospace;pointer-events:none}
+.drop-ov.on{display:flex}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="hdr-logo">printEdit</span>
+  <span class="hdr-brand">Datentechnik Reitz</span>
+  <div class="hdr-sep"></div>
+  <button class="hdr-btn" onclick="loadFile()">📂 Laden</button>
+  <button class="hdr-btn" onclick="saveFile()">💾 Speichern</button>
+  <div class="hdr-sep"></div>
+  <button class="hdr-btn acc" onclick="runSim()">▶ Simulieren</button>
+  <button class="hdr-btn" onclick="jumpToLine()">→ Zeile</button>
+  <div class="hdr-spacer"></div>
+  <span id="hdr-filename">Keine Datei</span>
+</div>
+
+<div class="status">
+  <span>Zeilen: <span class="v" id="s-lines">–</span></span>
+  <span>Layer: <span class="va" id="s-layers">–</span></span>
+  <span>Z: <span class="v" id="s-z">–</span></span>
+  <span>Zeit: <span class="v" id="s-time">–</span></span>
+  <span>Filament: <span class="v" id="s-fil">–</span></span>
+  <span>Cursor: <span class="vg" id="s-cur">1:1</span></span>
+  <span id="s-msg"></span>
+</div>
+
+<div class="main">
+  <div class="editor-panel">
+    <div id="editor-wrap"></div>
+  </div>
+
+  <div class="rsz" id="rsz"></div>
+
+  <div class="right-panel" id="right-panel">
+    <div class="sim-bar">
+      <span class="sim-lbl">LAYER</span>
+      <button class="s-btn" onclick="layerNav(-Infinity)" title="Erster Layer">|◄</button>
+      <button class="s-btn" onclick="layerNav(-10)">«</button>
+      <button class="s-btn" onclick="layerNav(-1)">‹</button>
+      <span class="layer-disp" id="layer-disp">– / –</span>
+      <button class="s-btn" onclick="layerNav(1)">›</button>
+      <button class="s-btn" onclick="layerNav(10)">»</button>
+      <button class="s-btn" onclick="layerNav(Infinity)" title="Letzter Layer">►|</button>
+      <button class="s-btn" id="btn-all" onclick="toggleAll()" title="Alle Layer">ALL</button>
+      <div class="sim-sp"></div>
+      <button class="s-btn active" id="vt-top" onclick="setView('top')">XY</button>
+      <button class="s-btn" id="vt-side" onclick="setView('side')">XZ</button>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="sim-canvas"></canvas>
+      <div id="canvas-info"></div>
+    </div>
+
+    <div class="opt-panel">
+      <div class="opt-title">Optimierungen</div>
+      <div class="opt-grid">
+        <button class="opt-btn" onclick="optDuplicates()">⚡ Duplikate<br>entfernen</button>
+        <button class="opt-btn" onclick="optComments()">✂ Kommentare<br>löschen</button>
+        <button class="opt-btn" onclick="optEmptyLines()">◻ Leerzeilen<br>löschen</button>
+        <button class="opt-btn" onclick="optFeed()">⇄ Vorschub<br>normieren</button>
+        <button class="opt-btn" onclick="optStartGcode()">↑ Start-<br>G-code</button>
+        <button class="opt-btn" onclick="optEndGcode()">↓ End-<br>G-code</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drop-ov" id="drop-ov">G-code Datei hier ablegen</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+//  MONACO INIT
+// ═══════════════════════════════════════════════════════════
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+require(['vs/editor/editor.main'], function () {
+
+  // G-code Syntax
+  monaco.languages.register({ id: 'gcode' });
+  monaco.languages.setMonarchTokensProvider('gcode', {
+    tokenizer: {
+      root: [
+        [/;.*$/,           'comment'],
+        [/\([^)]*\)/,      'comment'],
+        [/[GM]\d+(\.\d+)?/,'keyword'],
+        [/[XYZEF]-?[\d.]+/,'number.float'],
+        [/[IJKRS]-?[\d.]+/,'number'],
+        [/[TQP]\d*/,       'type'],
+        [/-?[\d.]+/,       'number'],
+      ]
+    }
+  });
+
+  monaco.editor.defineTheme('pe-dark', {
+    base: 'vs-dark', inherit: true,
+    rules: [
+      { token: 'comment',      foreground: '484f58', fontStyle: 'italic' },
+      { token: 'keyword',      foreground: 'f05500', fontStyle: 'bold'   },
+      { token: 'number.float', foreground: '79c0ff' },
+      { token: 'number',       foreground: '56d0ff' },
+      { token: 'type',         foreground: '3fb950' },
+    ],
+    colors: {
+      'editor.background':                  '#0d1117',
+      'editor.foreground':                  '#e6edf3',
+      'editorLineNumber.foreground':         '#484f58',
+      'editorLineNumber.activeForeground':   '#8b949e',
+      'editor.selectionBackground':          '#2d333b',
+      'editor.inactiveSelectionBackground':  '#2d333b66',
+      'editorCursor.foreground':             '#f05500',
+      'editor.lineHighlightBackground':      '#161b22',
+      'editorGutter.background':             '#0d1117',
+    }
+  });
+
+  window.ED = monaco.editor.create(document.getElementById('editor-wrap'), {
+    language:             'gcode',
+    theme:                'pe-dark',
+    value:                SAMPLE_GCODE,
+    fontSize:             13,
+    fontFamily:           "'Cascadia Code','Fira Code','Consolas',monospace",
+    lineNumbers:          'on',
+    minimap:              { enabled: true, scale: 1 },
+    scrollBeyondLastLine: false,
+    wordWrap:             'off',
+    renderWhitespace:     'none',
+    folding:              false,
+    quickSuggestions:     false,
+    parameterHints:       { enabled: false },
+    suggestOnTriggerCharacters: false,
+    mouseWheelZoom:       true,
+  });
+
+  var debounce;
+  ED.onDidChangeModelContent(function () {
+    document.getElementById('s-lines').textContent = ED.getModel().getLineCount().toLocaleString('de');
+    clearTimeout(debounce);
+    debounce = setTimeout(function () { updateStats(false); }, 600);
+  });
+  ED.onDidChangeCursorPosition(function (e) {
+    document.getElementById('s-cur').textContent = e.position.lineNumber + ':' + e.position.column;
+  });
+
+  updateStats(true);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  G-CODE PARSER
+// ═══════════════════════════════════════════════════════════
+function parseGcode(text) {
+  var lines  = text.split('\n');
+  var layers = [];
+  var cur    = null;
+  var x=0, y=0, z=0, e=0, f=2000;
+  var rel=false, relE=false;
+  var totalE=0, totalTime=0;
+  var bedW=220, bedH=220;
+
+  function ensureLayer(zv) {
+    if (!cur || cur.z !== zv) {
+      cur = { z: zv, moves: [] };
+      layers.push(cur);
+    }
+  }
+
+  lines.forEach(function (raw) {
+    var stripped = raw.replace(/;.*$/, '').replace(/\([^)]*\)/g, '').trim().toUpperCase();
+    if (!stripped) return;
+
+    var m;
+    // Mode switches
+    if (/^G91/.test(stripped)) { rel  = true;  return; }
+    if (/^G90/.test(stripped)) { rel  = false; return; }
+    if (/^M83/.test(stripped)) { relE = true;  return; }
+    if (/^M82/.test(stripped)) { relE = false; return; }
+    if (/^G28/.test(stripped)) { x=0; y=0; z=0; return; }
+    if (/^G92/.test(stripped)) {
+      if ((m = stripped.match(/E(-?[\d.]+)/))) e = parseFloat(m[1]);
+      return;
+    }
+
+    // Move commands
+    if (/^G0\b|^G00\b|^G1\b|^G01\b/.test(stripped)) {
+      var nx = (m = stripped.match(/X(-?[\d.]+)/)) ? (rel ? x + +m[1] : +m[1]) : x;
+      var ny = (m = stripped.match(/Y(-?[\d.]+)/)) ? (rel ? y + +m[1] : +m[1]) : y;
+      var nz = (m = stripped.match(/Z(-?[\d.]+)/)) ? (rel ? z + +m[1] : +m[1]) : z;
+      var ne = (m = stripped.match(/E(-?[\d.]+)/)) ? (relE ? e + +m[1] : +m[1]) : e;
+      if ((m = stripped.match(/F(-?[\d.]+)/))) f = +m[1];
+
+      if (nz !== z) ensureLayer(nz);
+      if (!cur)     ensureLayer(z);
+
+      var ext  = ne > e;
+      var dx   = nx - x, dy = ny - y, dz = nz - z;
+      var dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      if (f > 0) totalTime += (dist / f) * 60;
+      if (ext)   totalE    += Math.max(0, ne - e);
+
+      cur.moves.push({ x0:x, y0:y, x1:nx, y1:ny, z0:z, z1:nz, e:ext, f:f });
+      x=nx; y=ny; z=nz; e=ne;
+
+      if (nx > 0) bedW = Math.max(bedW, Math.ceil(nx / 10) * 10 + 10);
+      if (ny > 0) bedH = Math.max(bedH, Math.ceil(ny / 10) * 10 + 10);
+    }
+  });
+
+  return { layers:layers, totalE:totalE, totalTime:totalTime, bedW:bedW, bedH:bedH };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SIM STATE & CANVAS
+// ═══════════════════════════════════════════════════════════
+var SIM   = null;
+var CL    = 0;       // current layer index
+var SHOWALL = false;
+var VIEW  = 'top';   // 'top' | 'side'
+var canvas = document.getElementById('sim-canvas');
+var ctx    = canvas.getContext('2d');
+
+// Pan / zoom
+var PAN = { ox:0, oy:0, scale:1, dragging:false, sx:0, sy:0, sox:0, soy:0 };
+
+function fitCanvas() {
+  var cw  = canvas.parentElement;
+  var opt = cw.parentElement.querySelector('.opt-panel');
+  var sh  = cw.parentElement.querySelector('.sim-bar');
+  canvas.width  = cw.offsetWidth;
+  canvas.height = cw.offsetHeight;
+}
+
+function autoFit() {
+  if (!SIM || !SIM.layers.length) return;
+  var bw = SIM.bedW, bh = SIM.bedH;
+  var cw = canvas.width, ch = canvas.height;
+  var pad = 30;
+  PAN.scale = Math.min((cw - pad*2) / bw, (ch - pad*2) / bh);
+  PAN.ox    = (cw - bw * PAN.scale) / 2;
+  PAN.oy    = (ch - bh * PAN.scale) / 2;
+}
+
+function tx(v) { return PAN.ox + v  * PAN.scale; }
+function ty(v) { return canvas.height - (PAN.oy + v * PAN.scale); }
+
+function drawSim() {
+  fitCanvas();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!SIM || !SIM.layers.length) return;
+
+  var ll = SIM.layers;
+
+  // Grid
+  ctx.strokeStyle = '#161b22';
+  ctx.lineWidth = 1;
+  var gs = 10 * PAN.scale;
+  if (gs > 5) {
+    var steps = Math.ceil(SIM.bedW / 10) + 1;
+    for (var i=0; i<=steps; i++) {
+      var gx = tx(i*10), gy = ty(i*10);
+      ctx.beginPath(); ctx.moveTo(gx, 0);           ctx.lineTo(gx, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, gy);            ctx.lineTo(canvas.width, gy);  ctx.stroke();
+    }
+  }
+
+  // Bed outline
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.strokeRect(tx(0), ty(SIM.bedH), SIM.bedW * PAN.scale, SIM.bedH * PAN.scale);
+  ctx.setLineDash([]);
+
+  // Origin
+  ctx.fillStyle = '#f05500';
+  ctx.beginPath(); ctx.arc(tx(0), ty(0), 4, 0, Math.PI*2); ctx.fill();
+
+  if (VIEW === 'top') {
+    // Ghost (previous layers, dimmed)
+    if (!SHOWALL && CL > 0) {
+      ctx.globalAlpha = 0.1;
+      for (var gi=0; gi<CL; gi++) {
+        ll[gi].moves.forEach(function (mv) {
+          if (!mv.e) return;
+          ctx.strokeStyle = '#f05500';
+          ctx.lineWidth   = 0.7;
+          ctx.beginPath(); ctx.moveTo(tx(mv.x0), ty(mv.y0)); ctx.lineTo(tx(mv.x1), ty(mv.y1)); ctx.stroke();
+        });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Active layers
+    var active = SHOWALL ? ll : [ll[CL]];
+    active.forEach(function (layer, li) {
+      if (!layer) return;
+      var col = SHOWALL ? layerCol(li, ll.length) : '#f05500';
+      layer.moves.forEach(function (mv) {
+        if (mv.e) {
+          ctx.strokeStyle = col;
+          ctx.lineWidth   = 1.4;
+        } else {
+          ctx.strokeStyle = '#2a3347';
+          ctx.lineWidth   = 0.6;
+        }
+        ctx.beginPath(); ctx.moveTo(tx(mv.x0), ty(mv.y0)); ctx.lineTo(tx(mv.x1), ty(mv.y1)); ctx.stroke();
+      });
+    });
+
+  } else {
+    // Side view (XZ)
+    var txSide = function(v)  { return PAN.ox + v * PAN.scale; };
+    var tySide = function(v)  { return canvas.height - 20 - v * PAN.scale * 3; };
+    ll.forEach(function (layer, li) {
+      var col = layerCol(li, ll.length);
+      layer.moves.forEach(function (mv) {
+        if (!mv.e) return;
+        ctx.strokeStyle = col;
+        ctx.lineWidth   = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(txSide(mv.x0), tySide(mv.z0));
+        ctx.lineTo(txSide(mv.x1), tySide(mv.z1));
+        ctx.stroke();
+      });
+    });
+  }
+
+  // Info overlay
+  var info = '';
+  if (SIM.layers[CL]) info = 'Z = ' + SIM.layers[CL].z.toFixed(3) + ' mm';
+  if (SHOWALL) info = 'Alle Layer';
+  document.getElementById('canvas-info').textContent = info;
+}
+
+function layerCol(i, total) {
+  var h = total <= 1 ? 20 : (i / (total-1)) * 200 + 20;
+  return 'hsl(' + h + ',80%,55%)';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════════════════
+function layerNav(d) {
+  if (!SIM || !SIM.layers.length) return;
+  SHOWALL = false;
+  document.getElementById('btn-all').classList.remove('active');
+  var max = SIM.layers.length - 1;
+  if (d === -Infinity) CL = 0;
+  else if (d === Infinity) CL = max;
+  else CL = Math.max(0, Math.min(max, CL + d));
+  updateLayerDisp();
+  drawSim();
+}
+
+function toggleAll() {
+  SHOWALL = !SHOWALL;
+  document.getElementById('btn-all').classList.toggle('active', SHOWALL);
+  updateLayerDisp();
+  drawSim();
+}
+
+function setView(v) {
+  VIEW = v;
+  document.getElementById('vt-top').classList.toggle('active', v === 'top');
+  document.getElementById('vt-side').classList.toggle('active', v === 'side');
+  drawSim();
+}
+
+function updateLayerDisp() {
+  var ll = SIM ? SIM.layers.length : 0;
+  document.getElementById('layer-disp').textContent = SHOWALL ? 'ALL / ' + ll : (CL+1) + ' / ' + ll;
+  if (SIM && SIM.layers[CL]) document.getElementById('s-z').textContent = SIM.layers[CL].z.toFixed(3) + ' mm';
+}
+
+function runSim() {
+  if (!window.ED) return;
+  var text = ED.getValue();
+  SIM  = parseGcode(text);
+  CL   = Math.max(0, SIM.layers.length - 1);
+  SHOWALL = false;
+  document.getElementById('btn-all').classList.remove('active');
+  autoFit();
+  updateLayerDisp();
+  updateStats(false);
+  drawSim();
+  flash('Simulation aktualisiert · ' + SIM.layers.length + ' Layer');
+}
+
+function updateStats(runSimToo) {
+  if (!window.ED) return;
+  var text  = ED.getValue();
+  var lines = ED.getModel().getLineCount();
+  document.getElementById('s-lines').textContent = lines.toLocaleString('de');
+  if (runSimToo) { SIM = parseGcode(text); CL = Math.max(0, SIM.layers.length-1); autoFit(); updateLayerDisp(); drawSim(); }
+  if (SIM) {
+    document.getElementById('s-layers').textContent = SIM.layers.length;
+    var mm = Math.floor(SIM.totalTime / 60), ss = Math.floor(SIM.totalTime % 60);
+    document.getElementById('s-time').textContent  = mm + 'm ' + String(ss).padStart(2,'0') + 's';
+    document.getElementById('s-fil').textContent   = SIM.totalE.toFixed(1) + ' mm';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILE I/O
+// ═══════════════════════════════════════════════════════════
+function loadFile() {
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.gcode,.g,.nc,.ngc,.txt';
+  inp.onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function (ev) { applyFile(ev.target.result, f.name); };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function saveFile() {
+  var text = ED.getValue();
+  var blob = new Blob([text], { type: 'text/plain' });
+  var a    = document.createElement('a');
+  a.href   = URL.createObjectURL(blob);
+  var fn   = document.getElementById('hdr-filename').textContent;
+  a.download = (fn === 'Keine Datei' ? 'output' : fn.replace(/\.gcode$/i,'')) + '.gcode';
+  a.click();
+  flash('Gespeichert: ' + a.download);
+}
+
+function applyFile(text, name) {
+  ED.setValue(text);
+  document.getElementById('hdr-filename').textContent = name || 'output.gcode';
+  runSim();
+}
+
+function jumpToLine() {
+  var n = parseInt(prompt('Zu Zeile springen:'), 10);
+  if (!n || !window.ED) return;
+  ED.revealLineInCenter(n);
+  ED.setPosition({ lineNumber: n, column: 1 });
+  ED.focus();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRAG & DROP
+// ═══════════════════════════════════════════════════════════
+var ov = document.getElementById('drop-ov');
+document.addEventListener('dragover',  function (e) { e.preventDefault(); ov.classList.add('on'); });
+document.addEventListener('dragleave', function (e) { if (!e.relatedTarget) ov.classList.remove('on'); });
+document.addEventListener('drop', function (e) {
+  e.preventDefault(); ov.classList.remove('on');
+  var f = e.dataTransfer.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function (ev) { applyFile(ev.target.result, f.name); };
+  r.readAsText(f);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  CANVAS PAN / ZOOM
+// ═══════════════════════════════════════════════════════════
+canvas.addEventListener('wheel', function (e) {
+  e.preventDefault();
+  var factor = e.deltaY < 0 ? 1.1 : 0.9;
+  var mx = e.offsetX, my = e.offsetY;
+  PAN.ox    = mx - (mx - PAN.ox) * factor;
+  PAN.oy    = (canvas.height - my) - (canvas.height - my - PAN.oy) * factor;
+  PAN.scale *= factor;
+  drawSim();
+}, { passive: false });
+
+canvas.addEventListener('mousedown', function (e) {
+  PAN.dragging=true; PAN.sx=e.clientX; PAN.sy=e.clientY; PAN.sox=PAN.ox; PAN.soy=PAN.oy;
+});
+document.addEventListener('mousemove', function (e) {
+  if (!PAN.dragging) return;
+  PAN.ox = PAN.sox + (e.clientX - PAN.sx);
+  PAN.oy = PAN.soy - (e.clientY - PAN.sy);
+  drawSim();
+});
+document.addEventListener('mouseup', function () { PAN.dragging = false; });
+
+canvas.addEventListener('dblclick', function () { autoFit(); drawSim(); });
+
+// ═══════════════════════════════════════════════════════════
+//  RESIZE HANDLE (Editor ↔ Sim)
+// ═══════════════════════════════════════════════════════════
+(function () {
+  var rz  = document.getElementById('rsz');
+  var rp  = document.getElementById('right-panel');
+  var dr  = false, sx, sw;
+  rz.addEventListener('mousedown', function (e) { dr=true; sx=e.clientX; sw=rp.offsetWidth; e.preventDefault(); });
+  document.addEventListener('mousemove', function (e) {
+    if (!dr) return;
+    var nw = Math.max(220, Math.min(720, sw + (sx - e.clientX)));
+    rp.style.width = nw + 'px';
+    if (window.ED) ED.layout();
+    drawSim();
+  });
+  document.addEventListener('mouseup', function () { dr=false; });
+})();
+
+window.addEventListener('resize', function () {
+  if (window.ED) ED.layout();
+  autoFit();
+  drawSim();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  OPTIMIZATIONS
+// ═══════════════════════════════════════════════════════════
+function getLines()         { return ED.getValue().split('\n'); }
+function setLines(ll, msg)  { ED.setValue(ll.join('\n')); flash(msg || 'Fertig'); runSim(); }
+
+function optComments() {
+  setLines(getLines().map(function(l) { return l.split(';')[0].replace(/\([^)]*\)/g,'').trimEnd(); }), 'Kommentare entfernt');
+}
+function optEmptyLines() {
+  setLines(getLines().filter(function(l) { return l.trim() !== ''; }), 'Leerzeilen entfernt');
+}
+function optDuplicates() {
+  var cx='__', cy='__', cz='__', ce='__', cf='__';
+  var out = getLines().filter(function (line) {
+    var l = line.trim().toUpperCase();
+    if (!/^G0\b|^G00\b|^G1\b|^G01\b/.test(l)) return true;
+    var m;
+    var nx = (m=l.match(/X(-?[\d.]+)/)) ? m[1] : cx;
+    var ny = (m=l.match(/Y(-?[\d.]+)/)) ? m[1] : cy;
+    var nz = (m=l.match(/Z(-?[\d.]+)/)) ? m[1] : cz;
+    var nf = (m=l.match(/F(-?[\d.]+)/)) ? m[1] : cf;
+    var ne =  l.match(/E(-?[\d.]+)/);
+    if (nx===cx && ny===cy && nz===cz && nf===cf && !ne) return false;
+    cx=nx; cy=ny; cz=nz; cf=nf;
+    return true;
+  });
+  setLines(out, 'Duplikate entfernt · ' + (getLines().length - out.length) + ' Zeilen');
+}
+function optFeed() {
+  var f0 = prompt('Vorschub G0 (mm/min):', '9000');
+  var f1 = prompt('Vorschub G1 (mm/min):', '1500');
+  if (!f0 || !f1) return;
+  setLines(getLines().map(function (line) {
+    var l = line.trim().toUpperCase();
+    if (/^G0\b|^G00\b/.test(l)) return line.replace(/F[\d.]+/i,'').trimEnd() + ' F' + f0;
+    if (/^G1\b|^G01\b/.test(l) && !line.match(/E/i)) return line.replace(/F[\d.]+/i,'').trimEnd() + ' F' + f1;
+    return line;
+  }), 'Vorschub normiert');
+}
+function optStartGcode() {
+  var s = ['G28        ; Home all axes',
+           'G29        ; Auto bed leveling',
+           'G1 Z15 F5000 ; Lift nozzle',
+           'G92 E0     ; Reset extruder',
+           'G1 F140 E30 ; Prime nozzle',
+           'G92 E0     ; Reset extruder',
+           ''].join('\n');
+  ED.setValue(s + ED.getValue());
+  flash('Start-G-code eingefügt');
+}
+function optEndGcode() {
+  var s = ['\nG91        ; Relative',
+           'G1 E-2 F2700 ; Retract',
+           'G1 Z10 F3000 ; Lift',
+           'G90        ; Absolute',
+           'G28 X0 Y0  ; Home X/Y',
+           'M104 S0    ; Extruder aus',
+           'M140 S0    ; Bett aus',
+           'M84        ; Motoren aus'].join('\n');
+  ED.setValue(ED.getValue() + s);
+  flash('End-G-code eingefügt');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════
+function flash(msg) {
+  var el = document.getElementById('s-msg');
+  el.textContent = msg;
+  clearTimeout(flash._t);
+  flash._t = setTimeout(function () { el.textContent = ''; }, 3500);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SAMPLE G-CODE
+// ═══════════════════════════════════════════════════════════
+var SAMPLE_GCODE = [
+';  printEdit – Beispiel G-code (Cura)',
+';  ────────────────────────────────',
+'M104 S200    ; Extruder 200°C',
+'M140 S60     ; Bett 60°C',
+'M109 S200    ; Warten Extruder',
+'M190 S60     ; Warten Bett',
+'G28          ; Home all axes',
+'G92 E0       ; Reset Extruder',
+'',
+';LAYER_COUNT:4',
+';LAYER:0',
+'G0 F3600 X10 Y10 Z0.2',
+'G1 F1500 X110 Y10 E4.0',
+'G1 X110 Y110 E9.0',
+'G1 X10 Y110 E14.0',
+'G1 X10 Y10 E18.0',
+'G0 X20 Y20',
+'G1 X100 Y20 E21.5',
+'G1 X100 Y100 E25.0',
+'G1 X20 Y100 E28.5',
+'G1 X20 Y20 E32.0',
+'',
+';LAYER:1',
+'G0 F3600 X10 Y10 Z0.4',
+'G1 F1500 X110 Y10 E36.0',
+'G1 X110 Y110 E41.0',
+'G1 X10 Y110 E46.0',
+'G1 X10 Y10 E51.0',
+'G0 X20 Y20',
+'G1 X100 Y20 E54.5',
+'G1 X100 Y100 E58.0',
+'G1 X20 Y100 E61.5',
+'G1 X20 Y20 E65.0',
+'',
+';LAYER:2',
+'G0 F3600 X10 Y10 Z0.6',
+'G1 F1500 X60 Y10 E67.5',
+'G1 X110 Y10 E70.0',
+'G1 X110 Y60 E73.5',
+'G1 X110 Y110 E76.0',
+'G1 X60 Y110 E79.5',
+'G1 X10 Y110 E82.0',
+'G1 X10 Y60 E85.5',
+'G1 X10 Y10 E88.0',
+'',
+';LAYER:3',
+'G0 F3600 X10 Y10 Z0.8',
+'G1 F1500 X110 Y10 E92.0',
+'G1 X110 Y110 E97.0',
+'G1 X10 Y110 E102.0',
+'G1 X10 Y10 E107.0',
+'',
+'M104 S0     ; Extruder aus',
+'M140 S0     ; Bett aus',
+'G28 X0 Y0   ; Home',
+'M84         ; Motoren aus',
+].join('\n');
+
+</script>
+</body>
+</html>
