@@ -195,7 +195,7 @@ function initPreview() {
     backgroundColor:      '#080c12',
     renderTravel:         SHOW_TRAVEL,
     buildVolume:          { x: 220, y: 220, z: 250 },
-    initialCameraPosition:[-100, 400, 450],
+    initialCameraPosition:[0, 150, 200],
   });
   PREVIEW.resize();
 }
@@ -334,14 +334,12 @@ function updateLayerView() {
   // Layer display
   document.getElementById('layer-disp').textContent = CURLAYER + ' / ' + MAXLAYER;
 
-  // Z height
-  var layer = PREVIEW.layers[CURLAYER];
-  var z = layer ? layer.height : '–';
-  var zStr = layer ? PREVIEW.parser.layers.slice(0, CURLAYER)
-    .reduce(function(a, l) { return a + (l.height || 0); }, 0).toFixed(3) + ' mm' : '–';
+  // Z height – parser.layers is 0-based, layers[0] = first real layer
+  var pl = PREVIEW.parser.layers[CURLAYER - 1];
+  var zStr = pl ? pl.z.toFixed(3) + ' mm' : '–';
   document.getElementById('layer-z-val').textContent = zStr;
   document.getElementById('sim-overlay').textContent =
-    'Layer ' + CURLAYER + ' / ' + MAXLAYER + '\nZ ≈ ' + zStr;
+    'Layer ' + CURLAYER + ' / ' + MAXLAYER + '   Z = ' + zStr;
 }
 
 function updateStats() {
