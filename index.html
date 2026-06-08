@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>printEdit – Datentechnik Reitz</title>
 <style>
-/* ── KUKA-Theme (identisch zu cnc-technik.de/kuka) ───────── */
+/* ── KUKA-Theme ───────── */
 :root,[data-theme=krl-dark]{
   --bg1:#1E1E1E; --bg2:#252526; --bg3:#2D2D2D; --bg4:#37373D;
   --bg-hover:#3C3C3C; --bg-input:#1E1E1E;
@@ -13,7 +13,7 @@
   --text1:#CCCCCC; --text2:#999999; --text3:#666666; --text-on:#FFFFFF;
   --accent:#007ACC;
   --scrollbar-track:#1E1E1E; --scrollbar-thumb:#424242; --scrollbar-thumb-hover:#555555;
-  --sim-bg:#141414; --sim-extrusion:#f05500;
+  --sim-bg:#141414;
 }
 [data-theme=krl-light]{
   --bg1:#FFFFFF; --bg2:#F3F3F3; --bg3:#EBEBEB; --bg4:#C8DCFF;
@@ -22,26 +22,15 @@
   --text1:#1E1E1E; --text2:#555555; --text3:#888888; --text-on:#000000;
   --accent:#007ACC;
   --scrollbar-track:#F0F0F0; --scrollbar-thumb:#BBBBBB; --scrollbar-thumb-hover:#999999;
-  --sim-bg:#E8E8E8; --sim-extrusion:#cc3300;
+  --sim-bg:#E8E8E8;
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;background:var(--bg1);color:var(--text1)}
-
-/* ── Header ─────────────────────────────────────────────── */
-.hdr{
-  height:35px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;
-}
+.hdr{height:35px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;}
 .hdr-logo{color:var(--accent);font-weight:700;font-size:.85em;letter-spacing:1px;font-family:monospace;padding:0 6px}
 .hdr-brand{color:var(--text3);font-size:.72em;margin-right:4px}
 .hdr-sep{width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px}
-.hdr-btn{
-  background:transparent;border:1px solid transparent;color:var(--text2);
-  border-radius:3px;padding:0 10px;cursor:pointer;font-size:.78em;
-  font-family:inherit;height:24px;display:flex;align-items:center;gap:4px;
-  white-space:nowrap;flex-shrink:0;
-}
+.hdr-btn{background:transparent;border:1px solid transparent;color:var(--text2);border-radius:3px;padding:0 10px;cursor:pointer;font-size:.78em;font-family:inherit;height:24px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0;}
 .hdr-btn:hover{background:var(--bg-hover);color:var(--text1);border-color:var(--border)}
 .hdr-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 .hdr-btn.primary:hover{opacity:.85}
@@ -49,81 +38,47 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .hdr-btn.active:hover{background:var(--bg-hover)}
 .hdr-spacer{flex:1}
 #hdr-filename{color:var(--text3);font-size:.74em;font-family:monospace;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── Status bar ─────────────────────────────────────────── */
-.status{
-  height:22px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 10px;gap:14px;
-  font-size:.72em;color:var(--text3);font-family:monospace;flex-shrink:0;overflow:hidden;
-}
+.status{height:22px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:14px;font-size:.72em;color:var(--text3);font-family:monospace;flex-shrink:0;overflow:hidden;}
 .status .v{color:var(--text2)}
 .status .va{color:var(--accent)}
 #s-msg{color:#4ec9b0;margin-left:auto;white-space:nowrap}
-
-/* ── Main ────────────────────────────────────────────────── */
 .main{display:flex;height:calc(100vh - 57px);overflow:hidden}
 .editor-panel{flex:1;min-width:0;display:flex;flex-direction:column;min-width:200px}
 #editor-wrap{flex:1;min-height:0}
-
-/* ── Resize handle ───────────────────────────────────────── */
 .rsz{width:4px;background:var(--border);cursor:col-resize;flex-shrink:0}
 .rsz:hover,.rsz.active{background:var(--accent)}
-
-/* ── Right panel ─────────────────────────────────────────── */
 .right-panel{flex:1;min-width:260px;display:flex;flex-direction:column;border-left:1px solid var(--border)}
-
-/* ── Sim toolbar ─────────────────────────────────────────── */
-.sim-bar{
-  height:35px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 6px;gap:3px;flex-shrink:0;
-}
+.sim-bar{height:35px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 6px;gap:3px;flex-shrink:0;}
 .sim-lbl{color:var(--text3);font-size:.7em;font-family:monospace;letter-spacing:.5px;flex-shrink:0;padding:0 2px}
-.s-btn{
-  background:transparent;border:1px solid transparent;color:var(--text2);
-  border-radius:3px;padding:0 6px;cursor:pointer;font-size:.78em;
-  font-family:monospace;height:22px;display:flex;align-items:center;flex-shrink:0;
-}
+.s-btn{background:transparent;border:1px solid transparent;color:var(--text2);border-radius:3px;padding:0 6px;cursor:pointer;font-size:.78em;font-family:monospace;height:22px;display:flex;align-items:center;flex-shrink:0;}
 .s-btn:hover{background:var(--bg-hover);color:var(--text1)}
 .s-btn.active{color:var(--accent);border-color:var(--accent)}
 .s-btn.play{color:var(--accent);border-color:var(--accent);font-size:.9em}
-.s-btn.play.running{background:var(--accent);color:#fff;border-color:var(--accent)}
+.s-btn.play.running{background:var(--accent);color:#fff}
 .layer-disp{color:var(--accent);font-family:monospace;font-size:.8em;min-width:66px;text-align:center;flex-shrink:0}
-.sim-sp{flex:1}
-
-/* ── Layer slider ────────────────────────────────────────── */
-.slider-row{
-  height:28px;background:var(--bg2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0;
-}
+.slider-row{height:28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0;}
 #layer-slider{flex:1;accent-color:var(--accent);cursor:pointer;height:14px}
 .layer-z{color:var(--text3);font-family:monospace;font-size:.7em;min-width:76px;text-align:right;flex-shrink:0}
-
-/* ── Canvas container ────────────────────────────────────── */
+/* color mode row */
+.cmode-row{height:26px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;font-family:monospace;font-size:.68em;color:var(--text3);}
+.cm-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:3px;padding:0 7px;cursor:pointer;font-size:.75em;font-family:monospace;height:18px;display:flex;align-items:center;flex-shrink:0;white-space:nowrap;}
+.cm-btn:hover{color:var(--text1);border-color:var(--accent)}
+.cm-btn.active{color:var(--accent);border-color:var(--accent);background:var(--bg4)}
 .sim-wrap{flex:1;min-height:0;position:relative;overflow:hidden;background:var(--sim-bg)}
-#sim-canvas{display:block;width:100%;height:100%}
-.sim-overlay{position:absolute;bottom:6px;left:8px;font-family:monospace;font-size:.7em;color:var(--text3);pointer-events:none;line-height:1.8}
+#sim-canvas{display:block}
+/* legend */
+#sim-legend{position:absolute;bottom:6px;left:8px;font-family:monospace;font-size:.66em;color:var(--text2);pointer-events:none;line-height:2;background:rgba(0,0,0,.35);padding:4px 8px;border-radius:4px}
+#sim-legend span{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.sim-overlay{position:absolute;top:6px;right:8px;font-family:monospace;font-size:.7em;color:var(--text3);pointer-events:none;line-height:1.8;text-align:right}
 .sim-loading{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:var(--accent);font-family:monospace;font-size:.82em;z-index:10}
 .sim-loading.on{display:flex}
-
-/* ── Opt panel ───────────────────────────────────────────── */
-.tube-row{height:28px;background:var(--bg2);border-top:1px solid var(--border);
-  display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0;font-family:monospace;font-size:.72em;color:var(--text3)}
-.tube-row input[type=range]{flex:1;accent-color:var(--accent);cursor:pointer;height:14px}
 .opt-panel{border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;padding:7px}
 .opt-title{color:var(--text3);font-size:.68em;font-family:monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-.opt-btn{
-  background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
-  border-radius:3px;padding:5px 6px;cursor:pointer;font-size:.72em;
-  font-family:inherit;text-align:left;line-height:1.4;
-}
+.opt-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:3px;padding:5px 6px;cursor:pointer;font-size:.72em;font-family:inherit;text-align:left;line-height:1.4;}
 .opt-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg-hover)}
-
-/* ── Drop overlay ────────────────────────────────────────── */
 .drop-ov{display:none;position:fixed;inset:0;background:rgba(0,122,204,.08);border:2px dashed var(--accent);z-index:999;align-items:center;justify-content:center;font-size:1.2em;color:var(--accent);font-family:monospace;pointer-events:none}
 .drop-ov.on{display:flex}
-
-/* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:var(--scrollbar-track)}
 ::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
@@ -136,23 +91,20 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   <span class="hdr-logo">printEdit</span>
   <span class="hdr-brand">Datentechnik Reitz</span>
   <div class="hdr-sep"></div>
-  <button class="hdr-btn" onclick="loadFile()">📂 Laden</button>
-  <button class="hdr-btn" onclick="saveFile()">💾 Speichern</button>
+  <button class="hdr-btn" onclick="loadFile()">&#128194; Laden</button>
+  <button class="hdr-btn" onclick="saveFile()">&#128190; Speichern</button>
   <div class="hdr-sep"></div>
-  <button class="hdr-btn primary" onclick="runSim()">▶ Simulieren</button>
-  <button class="hdr-btn active" onclick="toggleTubes()" id="btn-tubes">Tubes: ein</button>
   <button class="hdr-btn" onclick="toggleTravel()" id="btn-travel">Travel: aus</button>
-  <div class="hdr-sep"></div>
-  <button class="hdr-btn" onclick="toggleTheme()" id="btn-theme">☀ Hell</button>
+  <button class="hdr-btn" onclick="toggleTheme()" id="btn-theme">&#9728; Hell</button>
   <div class="hdr-spacer"></div>
   <span id="hdr-filename">Keine Datei</span>
 </div>
 
 <div class="status">
-  <span>Zeilen: <span class="v" id="s-lines">–</span></span>
-  <span>Layer: <span class="va" id="s-layers">–</span></span>
-  <span>Zeit: <span class="v" id="s-time">–</span></span>
-  <span>Filament: <span class="v" id="s-fil">–</span></span>
+  <span>Zeilen: <span class="v" id="s-lines">&#8211;</span></span>
+  <span>Layer: <span class="va" id="s-layers">&#8211;</span></span>
+  <span>Zeit: <span class="v" id="s-time">&#8211;</span></span>
+  <span>Filament: <span class="v" id="s-fil">&#8211;</span></span>
   <span>Cursor: <span class="v" id="s-cur">1:1</span></span>
   <span id="s-msg"></span>
 </div>
@@ -164,50 +116,53 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   <div class="rsz" id="rsz"></div>
   <div class="right-panel" id="right-panel">
     <div class="sim-bar">
-      <button class="s-btn play" id="btn-play" onclick="playAnim()" title="Abspielen">▶</button>
-      <button class="s-btn" id="btn-stop" onclick="stopAnim()" title="Stop">■</button>
+      <button class="s-btn play" id="btn-play" onclick="playAnim()" title="Abspielen">&#9654;</button>
+      <button class="s-btn" id="btn-stop" onclick="stopAnim()" title="Stop">&#9632;</button>
       <div style="width:1px;height:16px;background:var(--border);margin:0 3px;flex-shrink:0"></div>
       <span class="sim-lbl">LAYER</span>
-      <button class="s-btn" onclick="layerFirst()">|◄</button>
-      <button class="s-btn" onclick="layerStep(-10)">«</button>
-      <button class="s-btn" onclick="layerStep(-1)">‹</button>
-      <span class="layer-disp" id="layer-disp">– / –</span>
-      <button class="s-btn" onclick="layerStep(1)">›</button>
-      <button class="s-btn" onclick="layerStep(10)">»</button>
-      <button class="s-btn" onclick="layerLast()">►|</button>
+      <button class="s-btn" onclick="layerFirst()">|&#9668;</button>
+      <button class="s-btn" onclick="layerStep(-10)">&#171;</button>
+      <button class="s-btn" onclick="layerStep(-1)">&#8249;</button>
+      <span class="layer-disp" id="layer-disp">&#8211; / &#8211;</span>
+      <button class="s-btn" onclick="layerStep(1)">&#8250;</button>
+      <button class="s-btn" onclick="layerStep(10)">&#187;</button>
+      <button class="s-btn" onclick="layerLast()">&#9658;|</button>
       <button class="s-btn active" id="btn-cumul" onclick="toggleCumul()">CUM</button>
+      <div style="flex:1"></div>
+      <span class="sim-lbl">Geschw.</span>
+      <input type="range" id="speed-slider" min="1" max="100" value="50"
+             style="width:60px;accent-color:var(--accent);cursor:pointer;height:14px;flex-shrink:0"
+             oninput="document.getElementById('speed-val').textContent=this.value">
+      <span id="speed-val" style="color:var(--accent);font-family:monospace;font-size:.72em;min-width:24px;text-align:right;flex-shrink:0">50</span>
     </div>
     <div class="slider-row">
       <span class="sim-lbl">Z</span>
       <input type="range" id="layer-slider" min="1" max="100" value="100" oninput="sliderInput(this.value)">
-      <span class="layer-z" id="layer-z-val">–</span>
-      <div style="width:1px;height:14px;background:var(--border);margin:0 6px;flex-shrink:0"></div>
-      <span class="sim-lbl">Geschw.</span>
-      <input type="range" id="speed-slider" min="1" max="100" value="50"
-             style="width:80px;accent-color:var(--accent);cursor:pointer;height:14px;flex-shrink:0"
-             oninput="document.getElementById('speed-val').textContent=this.value">
-      <span id="speed-val" style="color:var(--accent);font-family:monospace;font-size:.72em;min-width:24px;text-align:right;flex-shrink:0">50</span>
+      <span class="layer-z" id="layer-z-val">&#8211;</span>
+    </div>
+    <!-- Color mode selector -->
+    <div class="cmode-row">
+      <span style="margin-right:4px">Farbe:</span>
+      <button class="cm-btn active" id="cm-type"    onclick="setColorMode('type')">Typ</button>
+      <button class="cm-btn"        id="cm-speed"   onclick="setColorMode('speed')">Geschw.</button>
+      <button class="cm-btn"        id="cm-layer"   onclick="setColorMode('layer')">Layer</button>
+      <button class="cm-btn"        id="cm-overhang" onclick="setColorMode('overhang')">Overhang</button>
     </div>
     <div class="sim-wrap" id="sim-wrap">
       <canvas id="sim-canvas"></canvas>
+      <div id="sim-legend"></div>
       <div class="sim-overlay" id="sim-overlay"></div>
-      <div class="sim-loading" id="sim-loading">Simuliere…</div>
-    </div>
-    <div class="tube-row">
-      <span>Tube-Dicke</span>
-      <input type="range" id="tube-slider" min="1" max="30" value="6"
-             oninput="document.getElementById('tube-val').textContent=(this.value/10).toFixed(1)+' mm';applyTubeWidth()">
-      <span id="tube-val" style="color:var(--accent);min-width:40px;text-align:right">0.6 mm</span>
+      <div class="sim-loading" id="sim-loading">Simuliere&#8230;</div>
     </div>
     <div class="opt-panel">
       <div class="opt-title">Optimierungen</div>
       <div class="opt-grid">
-        <button class="opt-btn" onclick="optDuplicates()">⚡ Duplikate<br>entfernen</button>
-        <button class="opt-btn" onclick="optComments()">✂ Kommentare<br>löschen</button>
-        <button class="opt-btn" onclick="optEmptyLines()">◻ Leerzeilen<br>löschen</button>
-        <button class="opt-btn" onclick="optFeed()">⇄ Vorschub<br>normieren</button>
-        <button class="opt-btn" onclick="optStartGcode()">↑ Start-<br>G-code</button>
-        <button class="opt-btn" onclick="optEndGcode()">↓ End-<br>G-code</button>
+        <button class="opt-btn" onclick="optDuplicates()">&#9889; Duplikate<br>entfernen</button>
+        <button class="opt-btn" onclick="optComments()">&#9986; Kommentare<br>l&ouml;schen</button>
+        <button class="opt-btn" onclick="optEmptyLines()">&#9723; Leerzeilen<br>l&ouml;schen</button>
+        <button class="opt-btn" onclick="optFeed()">&#8644; Vorschub<br>normieren</button>
+        <button class="opt-btn" onclick="optStartGcode()">&#8593; Start-<br>G-code</button>
+        <button class="opt-btn" onclick="optEndGcode()">&#8595; End-<br>G-code</button>
       </div>
     </div>
   </div>
@@ -216,8 +171,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 <div class="drop-ov" id="drop-ov">G-code hier ablegen</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.2/dist/lil-gui.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gcode-preview@2.18.0/dist/gcode-preview.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 
 <script>
@@ -232,107 +186,731 @@ function applyTheme(t) {
   THEME = t;
   document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('pe_theme', t);
-  var isDark = t === 'krl-dark';
   var btn = document.getElementById('btn-theme');
-  btn.textContent = isDark ? '☀ Hell' : '🌙 Dunkel';
-  if (window.ED) {
-    monaco.editor.setTheme(isDark ? 'pe-dark' : 'pe-light');
-  }
-  if (PREVIEW) {
-    PREVIEW.backgroundColor = isDark ? '#141414' : '#E8E8E8';
-    PREVIEW.render();
+  btn.textContent = t === 'krl-dark' ? '\u2600 Hell' : '\uD83C\uDF19 Dunkel';
+  if (window.ED) monaco.editor.setTheme(t === 'krl-dark' ? 'pe-dark' : 'pe-light');
+  if (SIM.renderer) {
+    var bg = t === 'krl-dark' ? 0x141414 : 0xE8E8E8;
+    SIM.renderer.setClearColor(bg, 1);
+    simRender();
   }
 }
-
-function toggleTheme() {
-  applyTheme(THEME === 'krl-dark' ? 'krl-light' : 'krl-dark');
-}
-
-// Apply saved theme immediately
+function toggleTheme() { applyTheme(THEME === 'krl-dark' ? 'krl-light' : 'krl-dark'); }
 document.documentElement.setAttribute('data-theme', THEME);
 
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-var PREVIEW     = null;
 var CURLAYER    = 0;
 var MAXLAYER    = 0;
 var CUMULATIVE  = true;
 var SHOW_TRAVEL = false;
-var SHOW_TUBES  = true;
 var PLAYING     = false;
 var PLAY_TIMER  = null;
 var PLAY_RAF    = null;
-var TUBE_WIDTH  = 0.6;
+var COLOR_MODE  = 'type';   // type | speed | layer | overhang
 
 // ═══════════════════════════════════════════════════════════
-//  GCODE-PREVIEW
+//  COLOR PALETTES
 // ═══════════════════════════════════════════════════════════
-function initPreview() {
+var TYPE_COLORS = {
+  perimeter: 0xFFFF00,   // gelb  – Außenwand
+  outer_wall: 0xFFFF00,
+  wall_outer: 0xFFFF00,
+  inner_wall: 0xFF8800,  // orange – Innenwand
+  infill:     0x00AAFF,  // blau
+  top_solid:  0x00FF88,  // grün – Top/Bottom solid
+  bottom_solid:0x00FF88,
+  skin:       0x00FF88,
+  support:    0xCC44CC,  // lila
+  travel:     0x334466,  // dunkelblau
+  bridge:     0x00FFFF,  // cyan
+  overhang:   0xFF2222,  // rot
+  unknown:    0xCCCCCC,
+};
+var TYPE_LABELS = {
+  perimeter:  'Perimeter',
+  outer_wall: 'Außenwand',
+  wall_outer: 'Außenwand',
+  inner_wall: 'Innenwand',
+  infill:     'Infill',
+  top_solid:  'Top Solid',
+  bottom_solid:'Bottom Solid',
+  skin:       'Skin',
+  support:    'Support',
+  travel:     'Travel',
+  bridge:     'Bridge',
+  overhang:   'Overhang',
+  unknown:    'Sonstige',
+};
+
+// Regenbogen-Farbverlauf für Speed/Layer (HSL)
+function hsvToHex(h,s,v) {
+  var r,g,b;
+  var i=Math.floor(h*6), f=h*6-i, p=v*(1-s), q=v*(1-f*s), t=v*(1-(1-f)*s);
+  switch(i%6){case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;}
+  return ((Math.round(r*255)<<16)|(Math.round(g*255)<<8)|Math.round(b*255));
+}
+function speedColor(f, fmin, fmax) {
+  // blau (langsam) → grün → gelb → rot (schnell)
+  if (fmax <= fmin) return 0x00AAFF;
+  var t = (f - fmin) / (fmax - fmin);
+  t = Math.max(0, Math.min(1, t));
+  return hsvToHex((1-t)*0.66, 1, 1);
+}
+function layerColor(li, total) {
+  var t = total > 1 ? li / (total-1) : 0;
+  return hsvToHex((1-t)*0.66, 1, 1);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  G-CODE PARSER
+// ═══════════════════════════════════════════════════════════
+// Segment-Typen werden aus Cura/Prusa/Bambu Kommentaren erkannt
+var PARSED = null; // { layers, segments, fmin, fmax }
+
+var TYPE_COMMENT_MAP = [
+  [/TYPE:WALL-OUTER/i,          'outer_wall'],
+  [/TYPE:WALL-INNER/i,          'inner_wall'],
+  [/TYPE:SKIN/i,                'skin'],
+  [/TYPE:TOP[-_]?SURFACE/i,     'top_solid'],
+  [/TYPE:BOTTOM[-_]?SURFACE/i,  'bottom_solid'],
+  [/TYPE:FILL/i,                'infill'],
+  [/TYPE:INFILL/i,              'infill'],
+  [/TYPE:SUPPORT/i,             'support'],
+  [/TYPE:BRIDGE/i,              'bridge'],
+  [/TYPE:OVERHANG[-_]?WALL/i,   'overhang'],
+  // PrusaSlicer / SuperSlicer
+  [/;[^;]*perimeter/i,          'perimeter'],
+  [/;[^;]*external\s+perimeter/i,'outer_wall'],
+  [/;[^;]*infill/i,             'infill'],
+  [/;[^;]*solid\s+infill/i,     'top_solid'],
+  [/;[^;]*support/i,            'support'],
+  [/;[^;]*bridge/i,             'bridge'],
+  [/;[^;]*overhang/i,           'overhang'],
+  // Bambu / Orca
+  [/FEATURE: Outer wall/i,      'outer_wall'],
+  [/FEATURE: Inner wall/i,      'inner_wall'],
+  [/FEATURE: Sparse infill/i,   'infill'],
+  [/FEATURE: Internal solid/i,  'top_solid'],
+  [/FEATURE: Top surface/i,     'top_solid'],
+  [/FEATURE: Bottom surface/i,  'bottom_solid'],
+  [/FEATURE: Support/i,         'support'],
+  [/FEATURE: Bridge/i,          'bridge'],
+  [/FEATURE: Overhang/i,        'overhang'],
+];
+
+function parseGcode(text) {
+  var lines = text.split('\n');
+  var layers = [];       // [{z, lineIdx, segStart}]
+  var segs   = [];       // [{x0,y0,z0,x1,y1,z1,f,e,type,layer,lineIdx}]
+
+  var cx=0,cy=0,cz=0,ce=0,cf=1500;
+  var segType = 'unknown';
+  var layerZ  = null;
+  var layerIdx= -1;
+  var relative= false;
+  var fmin=1e9, fmax=0;
+
+  for (var i=0; i<lines.length; i++) {
+    var raw  = lines[i];
+    var line = raw.trim();
+    if (!line) continue;
+
+    // Kommentar-basierte Typ-Erkennung
+    var commentIdx = line.indexOf(';');
+    if (commentIdx >= 0) {
+      var comment = line.slice(commentIdx);
+      for (var k=0; k<TYPE_COMMENT_MAP.length; k++) {
+        if (TYPE_COMMENT_MAP[k][0].test(comment)) {
+          segType = TYPE_COMMENT_MAP[k][1];
+          break;
+        }
+      }
+    }
+
+    var cmd = line.split(';')[0].trim().toUpperCase();
+    if (!cmd) continue;
+
+    // Relative / absolute
+    if (cmd === 'G91') { relative = true;  continue; }
+    if (cmd === 'G90') { relative = false; continue; }
+    if (/^G92\b/.test(cmd)) {
+      var em = cmd.match(/E(-?[\d.]+)/); if (em) ce = parseFloat(em[1]);
+      continue;
+    }
+
+    if (/^G[01]\b|^G0[01]\b/.test(cmd)) {
+      var isG0 = /^G0\b|^G00\b/.test(cmd);
+      var mx = cmd.match(/X(-?[\d.]+)/);
+      var my = cmd.match(/Y(-?[\d.]+)/);
+      var mz = cmd.match(/Z(-?[\d.]+)/);
+      var me = cmd.match(/E(-?[\d.]+)/);
+      var mf = cmd.match(/F(-?[\d.]+)/);
+      if (mf) cf = parseFloat(mf[1]);
+
+      var nx = mx ? (relative ? cx+parseFloat(mx[1]) : parseFloat(mx[1])) : cx;
+      var ny = my ? (relative ? cy+parseFloat(my[1]) : parseFloat(my[1])) : cy;
+      var nz = mz ? (relative ? cz+parseFloat(mz[1]) : parseFloat(mz[1])) : cz;
+      var ne = me ? (relative ? ce+parseFloat(me[1]) : parseFloat(me[1])) : ce;
+
+      var extruding = (!isG0) && me && (ne > ce);
+      var moving    = (nx!==cx||ny!==cy||nz!==cz);
+
+      // Neuer Layer bei Z-Anstieg mit Extrusion danach oder explizitem Z
+      if (mz && nz !== cz) {
+        if (nz > cz) {
+          layerZ = nz;
+          layerIdx++;
+          layers.push({ z: nz, lineIdx: i, segStart: segs.length });
+        }
+        cz = nz;
+      }
+
+      if (moving && (extruding || isG0)) {
+        var t = isG0 ? 'travel' : segType;
+        // Overhang-Erkennung: G1 bei niedrigem Z-Faktor (kein Z-Wechsel, kurze Segmente)
+        var sType = t;
+        segs.push({
+          x0:cx, y0:cy, z0:cz,
+          x1:nx, y1:ny, z1:nz,
+          f: cf, e: extruding ? (ne-ce) : 0,
+          type: sType,
+          layer: layerIdx,
+          lineIdx: i
+        });
+        if (!isG0 && extruding) {
+          if (cf < fmin) fmin = cf;
+          if (cf > fmax) fmax = cf;
+        }
+      }
+
+      cx=nx; cy=ny; ce=ne;
+    }
+  }
+
+  // Nachträgliche Overhang-Erkennung: Extrusions-Segmente deutlich unter mittlerer Layerhöhe
+  if (layers.length > 2) {
+    var layerHeights = [];
+    for (var li=1; li<layers.length; li++) layerHeights.push(layers[li].z - layers[li-1].z);
+    var avgLH = layerHeights.reduce(function(a,b){return a+b;},0) / layerHeights.length;
+    // Segmente mit signifikantem Z-Abfall sind Bridge/Overhang
+    for (var si=0; si<segs.length; si++) {
+      var s = segs[si];
+      if (s.type==='travel') continue;
+      var dz = s.z1 - s.z0;
+      if (dz < -avgLH * 0.3) s.type = 'overhang';
+    }
+  }
+
+  if (fmin > fmax) { fmin=0; fmax=3000; }
+
+  return { layers: layers, segs: segs, fmin: fmin, fmax: fmax };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  THREE.JS SIMULATOR
+// ═══════════════════════════════════════════════════════════
+var SIM = {
+  renderer: null, scene: null, camera: null, controls: null,
+  meshGroup: null, animFrame: null, dirty: false
+};
+
+var EXT_WIDTH  = 0.45;  // mm Extrusionsbreite
+var EXT_HEIGHT = 0.2;   // mm Schichthöhe (wird aus Layerdaten berechnet)
+
+function simInit() {
   var canvas = document.getElementById('sim-canvas');
-  if (PREVIEW) { PREVIEW.dispose(); PREVIEW.cancelAnimation(); PREVIEW = null; }
-  var isDark = THEME === 'krl-dark';
-  // Ensure canvas has layout dimensions
-  var wrap = document.getElementById('sim-wrap');
-  canvas.style.width  = wrap.offsetWidth  + 'px';
-  canvas.style.height = wrap.offsetHeight + 'px';
-  PREVIEW = GCodePreview.init({
-    canvas:               canvas,
-    extrusionColor:       '#f05500',
-    topLayerColor:        '#ff8800',
-    lastSegmentColor:     '#ffffff',
-    travelColor:          isDark ? '#334466' : '#aaaacc',
-    backgroundColor:      isDark ? '#141414' : '#E8E8E8',
-    renderTravel:         SHOW_TRAVEL,
-    renderTubes:          SHOW_TUBES,
-    extrusionWidth:       TUBE_WIDTH,
-    lineHeight:           TUBE_WIDTH * 0.33,
-    buildVolume:          { x: 220, y: 220, z: 250 },
-    initialCameraPosition:[0, 200, 280],
-  });
-  PREVIEW.resize();
-  // Keyboard: arrow keys pan, +/- zoom
-  PREVIEW.controls.listenToKeyEvents(document);
-  document.removeEventListener('keydown', onSimKey, false);
-  document.addEventListener('keydown', onSimKey, false);
+  var wrap   = document.getElementById('sim-wrap');
+  var W = wrap.offsetWidth, H = wrap.offsetHeight;
+  canvas.width  = W; canvas.height = H;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  if (SIM.renderer) { SIM.renderer.dispose(); }
+
+  SIM.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+  SIM.renderer.setPixelRatio(window.devicePixelRatio || 1);
+  SIM.renderer.setSize(W, H);
+  SIM.renderer.setClearColor(THEME === 'krl-dark' ? 0x141414 : 0xE8E8E8, 1);
+
+  SIM.scene = new THREE.Scene();
+
+  // Kamera
+  SIM.camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 5000);
+  SIM.camera.position.set(0, -200, 200);
+  SIM.camera.up.set(0, 0, 1);
+
+  // OrbitControls
+  SIM.controls = new THREE.OrbitControls(SIM.camera, canvas);
+  SIM.controls.enableDamping = true;
+  SIM.controls.dampingFactor = 0.1;
+  SIM.controls.target.set(110, 110, 0);
+  SIM.controls.update();
+
+  // Druckbett – dünnes Gitter
+  var gridHelper = new THREE.GridHelper(220, 22, 0x333333, 0x282828);
+  gridHelper.rotation.x = Math.PI / 2;
+  gridHelper.position.set(110, 110, 0);
+  SIM.scene.add(gridHelper);
+
+  // Render-Loop
+  if (SIM.animFrame) cancelAnimationFrame(SIM.animFrame);
+  function loop() {
+    SIM.animFrame = requestAnimationFrame(loop);
+    SIM.controls.update();
+    SIM.renderer.render(SIM.scene, SIM.camera);
+  }
+  loop();
+
+  // Resize
+  if (SIM._ro) SIM._ro.disconnect();
+  SIM._ro = new ResizeObserver(function() { simResize(); });
+  SIM._ro.observe(wrap);
+
+  // Key zoom
+  document.removeEventListener('keydown', simKey);
+  document.addEventListener('keydown', simKey);
 }
 
-function onSimKey(e) {
-  if (!PREVIEW) return;
-  var factor;
-  if (e.key === '+' || e.key === '=' || e.key === 'NumpadAdd') {
-    factor = 0.85;
-  } else if (e.key === '-' || e.key === 'NumpadSubtract') {
-    factor = 1.18;
-  } else return;
+function simKey(e) {
+  if (!SIM.camera) return;
+  var f;
+  if (e.key==='+' || e.key==='=' || e.key==='NumpadAdd') f=0.85;
+  else if (e.key==='-' || e.key==='NumpadSubtract') f=1.18;
+  else return;
   e.preventDefault();
-  var cam = PREVIEW.camera, tgt = PREVIEW.controls.target;
-  cam.position.sub(tgt).multiplyScalar(factor).add(tgt);
-  PREVIEW.controls.update();
+  var cam=SIM.camera, tgt=SIM.controls.target;
+  cam.position.sub(tgt).multiplyScalar(f).add(tgt);
+  SIM.controls.update();
 }
 
-function applyTubeWidth() {
-  TUBE_WIDTH = parseFloat(document.getElementById('tube-slider').value) / 10;
-  initPreview();
+function simResize() {
+  var wrap = document.getElementById('sim-wrap');
+  var W = wrap.offsetWidth, H = wrap.offsetHeight;
+  if (!W||!H||!SIM.renderer) return;
+  SIM.renderer.setSize(W, H);
+  SIM.camera.aspect = W/H;
+  SIM.camera.updateProjectionMatrix();
+}
+
+function simRender() {
+  if (SIM.renderer && SIM.scene && SIM.camera)
+    SIM.renderer.render(SIM.scene, SIM.camera);
+}
+
+// ─────────────────────────────────────────────────────────
+//  Geometrie aufbauen
+// ─────────────────────────────────────────────────────────
+// Baut einen flachen Quader (Extrusions-Segment) wie Bambu:
+// Breite = EXT_WIDTH, Höhe = EXT_HEIGHT, Länge = Segmentlänge
+// Als BufferGeometry für Performance (kein Mesh pro Segment)
+
+function buildSimGeometry(parsed, upToLayer, cumulative) {
+  if (!parsed || !parsed.segs.length) return;
+
+  // Schichthöhe aus Daten berechnen
+  if (parsed.layers.length > 1) {
+    var diffs = [];
+    for (var i=1; i<Math.min(10,parsed.layers.length); i++)
+      diffs.push(parsed.layers[i].z - parsed.layers[i-1].z);
+    EXT_HEIGHT = diffs.reduce(function(a,b){return a+b;})/diffs.length;
+    EXT_WIDTH  = EXT_HEIGHT * 2.0; // typisch Breite = 2× Höhe
+  }
+
+  // Gruppen pro Typ/Farbe: Map color → {positions[], normals[], indices[]}
+  var buckets = {};
+  function getBucket(color) {
+    if (!buckets[color]) buckets[color] = { pos:[], norm:[], idx:[], cnt:0 };
+    return buckets[color];
+  }
+
+  var segs   = parsed.segs;
+  var layers = parsed.layers;
+  var fmin   = parsed.fmin, fmax = parsed.fmax;
+
+  // Layer-Range bestimmen
+  var layerFrom = cumulative ? 0 : (upToLayer - 1);
+  var layerTo   = upToLayer;  // 1-based → index < layerTo
+
+  for (var si=0; si<segs.length; si++) {
+    var s = segs[si];
+    if (s.layer < 0) continue;
+    if (s.layer >= layerTo) continue;
+    if (s.layer < layerFrom) continue;
+
+    var isTravel = s.type === 'travel';
+    if (isTravel && !SHOW_TRAVEL) continue;
+
+    // Farbe je nach Modus
+    var color;
+    if (COLOR_MODE === 'type') {
+      color = TYPE_COLORS[s.type] || TYPE_COLORS.unknown;
+    } else if (COLOR_MODE === 'speed') {
+      color = isTravel ? 0x334466 : speedColor(s.f, fmin, fmax);
+    } else if (COLOR_MODE === 'layer') {
+      color = layerColor(s.layer, layers.length);
+    } else if (COLOR_MODE === 'overhang') {
+      if (s.type === 'overhang') color = 0xFF2222;
+      else if (s.type === 'bridge') color = 0x00FFFF;
+      else if (s.type === 'travel') color = 0x334466;
+      else color = 0xCCCCCC;
+    }
+
+    var bk = getBucket(color);
+    addSegmentGeometry(bk, s, isTravel);
+  }
+
+  // Alten Mesh entfernen
+  if (SIM.meshGroup) { SIM.scene.remove(SIM.meshGroup); SIM.meshGroup = null; }
+  SIM.meshGroup = new THREE.Group();
+
+  for (var col in buckets) {
+    var bk = buckets[col];
+    if (!bk.pos.length) continue;
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(bk.pos, 3));
+    geo.setAttribute('normal',   new THREE.Float32BufferAttribute(bk.norm, 3));
+    geo.setIndex(bk.idx);
+    var mat = new THREE.MeshLambertMaterial({ color: parseInt(col), side: THREE.FrontSide });
+    SIM.meshGroup.add(new THREE.Mesh(geo, mat));
+  }
+
+  // Licht
+  SIM.scene.clear();
+  var gridHelper = new THREE.GridHelper(220, 22, 0x333333, 0x282828);
+  gridHelper.rotation.x = Math.PI / 2;
+  gridHelper.position.set(110, 110, 0);
+  SIM.scene.add(gridHelper);
+
+  var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(100, -100, 200);
+  SIM.scene.add(dirLight);
+  var ambLight = new THREE.AmbientLight(0xffffff, 0.4);
+  SIM.scene.add(ambLight);
+
+  SIM.scene.add(SIM.meshGroup);
+}
+
+// Fügt einen Extrusions-Quader als Faces in den Bucket ein
+function addSegmentGeometry(bk, s, isTravel) {
+  var dx = s.x1 - s.x0;
+  var dy = s.y1 - s.y0;
+  var dz = s.z1 - s.z0;
+  var len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+  if (len < 0.001) return;
+
+  var w = isTravel ? 0.08 : EXT_WIDTH;
+  var h = isTravel ? 0.08 : EXT_HEIGHT;
+
+  // Lokales Koordinatensystem: L=Längsachse, R=Querseite, U=oben
+  // L = Bewegungsrichtung
+  var lx=dx/len, ly=dy/len, lz=dz/len;
+  // U = Z-Achse (up), aber orthogonalisieren
+  var ux=0,uy=0,uz=1;
+  // R = L × U
+  var rx = ly*uz - lz*uy;
+  var ry = lz*ux - lx*uz;
+  var rz = lx*uy - ly*ux;
+  var rLen = Math.sqrt(rx*rx+ry*ry+rz*rz);
+  if (rLen < 0.001) { rx=1;ry=0;rz=0; } else { rx/=rLen;ry/=rLen;rz/=rLen; }
+  // U neu berechnen: U = R × L
+  ux = ry*lz - rz*ly;
+  uy = rz*lx - rx*lz;
+  uz = rx*ly - ry*lx;
+
+  // 8 Ecken des Quaders
+  // Basis: s.x0,y0,z0  Spitze: s.x1,y1,z1
+  // Quer: ±(w/2)*R, Hoch: 0 bis h*U (Extrusion liegt AUF dem Bett)
+  var hw = w * 0.5;
+  // Unterseite auf z0/z1, Oberseite um h angehoben
+  var verts = [
+    // p0-Seite
+    [s.x0 - rx*hw, s.y0 - ry*hw, s.z0          ],  // 0 links unten
+    [s.x0 + rx*hw, s.y0 + ry*hw, s.z0          ],  // 1 rechts unten
+    [s.x0 + rx*hw, s.y0 + ry*hw, s.z0 + h*uz   ],  // 2 rechts oben  ← uz ist näherungsweise 1
+    [s.x0 - rx*hw, s.y0 - ry*hw, s.z0 + h*uz   ],  // 3 links oben
+    // p1-Seite
+    [s.x1 - rx*hw, s.y1 - ry*hw, s.z1          ],  // 4
+    [s.x1 + rx*hw, s.y1 + ry*hw, s.z1          ],  // 5
+    [s.x1 + rx*hw, s.y1 + ry*hw, s.z1 + h*uz   ],  // 6
+    [s.x1 - rx*hw, s.y1 - ry*hw, s.z1 + h*uz   ],  // 7
+  ];
+
+  var base = bk.cnt;
+  for (var vi=0; vi<8; vi++) {
+    bk.pos.push(verts[vi][0], verts[vi][1], verts[vi][2]);
+  }
+
+  // Normalen (vereinfacht pro Fläche gleich)
+  // Seiten: unten, oben, links, rechts, start, end
+  var faces = [
+    [0,1,5,4], // unten  normal: -U
+    [3,7,6,2], // oben   normal: +U
+    [0,3,7,4], // links  normal: -R
+    [1,2,6,5], // rechts normal: +R
+    [0,1,2,3], // start  normal: -L
+    [4,5,6,7], // end    normal: +L
+  ];
+  var faceNormals = [
+    [0,0,-1],[0,0,1],
+    [-rx,-ry,-rz],[rx,ry,rz],
+    [-lx,-ly,-lz],[lx,ly,lz]
+  ];
+
+  for (var fi=0; fi<faces.length; fi++) {
+    var f=faces[fi], n=faceNormals[fi];
+    var i0=base+f[0], i1=base+f[1], i2=base+f[2], i3=base+f[3];
+    bk.idx.push(i0,i1,i2, i0,i2,i3);
+    // Normalen für alle 8 Verts werden für jede Fläche überschrieben → einfachste Lösung: flat shading über BufferGeometry
+  }
+  // Normalen pauschal für alle Verts setzen (flat shading kommt über computeVertexNormals)
+  for (var ni=0; ni<8; ni++) bk.norm.push(0,0,1);
+
+  bk.cnt += 8;
+}
+
+// ─────────────────────────────────────────────────────────
+//  Legende
+// ─────────────────────────────────────────────────────────
+function updateLegend() {
+  var el = document.getElementById('sim-legend');
+  if (COLOR_MODE === 'type') {
+    // Nur tatsächlich vorhandene Typen zeigen
+    if (!PARSED) { el.innerHTML=''; return; }
+    var found = {};
+    PARSED.segs.forEach(function(s){ found[s.type]=true; });
+    var html = '';
+    for (var k in TYPE_COLORS) {
+      if (!found[k]) continue;
+      if (k==='travel' && !SHOW_TRAVEL) continue;
+      var c = '#' + ('000000'+TYPE_COLORS[k].toString(16)).slice(-6);
+      html += '<div><span style="background:'+c+'"></span>'+(TYPE_LABELS[k]||k)+'</div>';
+    }
+    el.innerHTML = html;
+  } else if (COLOR_MODE === 'speed') {
+    el.innerHTML = '<div>Geschwindigkeit</div>'
+      +'<div style="background:linear-gradient(to right,#0055ff,#00ff00,#ff0000);width:100px;height:8px;border-radius:2px;display:inline-block"></div>'
+      +'<div style="display:flex;justify-content:space-between;width:100px"><span>langsam</span><span>schnell</span></div>';
+  } else if (COLOR_MODE === 'layer') {
+    el.innerHTML = '<div>Layer</div>'
+      +'<div style="background:linear-gradient(to right,#0055ff,#00ff00,#ff0000);width:100px;height:8px;border-radius:2px;display:inline-block"></div>'
+      +'<div style="display:flex;justify-content:space-between;width:100px"><span>unten</span><span>oben</span></div>';
+  } else if (COLOR_MODE === 'overhang') {
+    el.innerHTML = '<div><span style="background:#cccccc"></span>Normal</div>'
+      +'<div><span style="background:#00ffff"></span>Bridge</div>'
+      +'<div><span style="background:#ff2222"></span>Overhang</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SIMULATION starten
+// ═══════════════════════════════════════════════════════════
+function runSim() {
+  if (!window.ED) return;
+  stopAnim();
+  var text  = ED.getValue();
+  var lines = ED.getModel().getLineCount();
+  document.getElementById('s-lines').textContent = lines.toLocaleString('de');
+  var loading = document.getElementById('sim-loading');
+  if (lines > 3000) loading.classList.add('on');
+
+  setTimeout(function() {
+    try {
+      PARSED = parseGcode(text);
+      MAXLAYER = PARSED.layers.length;
+      CURLAYER = MAXLAYER;
+
+      var sl = document.getElementById('layer-slider');
+      sl.max = MAXLAYER || 1; sl.value = MAXLAYER;
+
+      buildSimGeometry(PARSED, CURLAYER, CUMULATIVE);
+      updateLayerView();
+      updateStats();
+      updateLegend();
+      flash('Simulation \u00B7 ' + MAXLAYER + ' Layer');
+    } catch(e) { flash('Fehler: ' + e.message); console.error(e); }
+    loading.classList.remove('on');
+  }, 0);
+}
+
+function updateLayerView() {
+  if (!PARSED || !MAXLAYER) return;
+  document.getElementById('layer-disp').textContent = CURLAYER + ' / ' + MAXLAYER;
+  var layer = PARSED.layers[CURLAYER-1];
+  var zStr  = layer ? layer.z.toFixed(3) + ' mm' : '\u2013';
+  document.getElementById('layer-z-val').textContent = zStr;
+  document.getElementById('sim-overlay').textContent = 'Layer ' + CURLAYER + ' / ' + MAXLAYER + '\nZ = ' + zStr;
+  buildSimGeometry(PARSED, CURLAYER, CUMULATIVE);
+  // Editor-Sync
+  if (window.ED && layer) {
+    ED.revealLineInCenter(layer.lineIdx + 1);
+    ED.setPosition({ lineNumber: layer.lineIdx + 1, column: 1 });
+  }
+}
+
+function setLayerTo(n) {
+  if (!PARSED || !MAXLAYER) return;
+  CURLAYER = Math.max(1, Math.min(MAXLAYER, n));
+  document.getElementById('layer-slider').value = CURLAYER;
+  updateLayerView();
+}
+
+function updateStats() {
+  if (!PARSED) return;
+  document.getElementById('s-layers').textContent = PARSED.layers.length;
+  var totalE=0, totalTime=0;
+  PARSED.segs.forEach(function(s) {
+    var d = Math.sqrt(Math.pow(s.x1-s.x0,2)+Math.pow(s.y1-s.y0,2)+Math.pow(s.z1-s.z0,2));
+    if (s.f > 0) totalTime += d / s.f * 60;
+    if (s.e > 0) totalE += s.e;
+  });
+  var mm=Math.floor(totalTime/60), ss=Math.floor(totalTime%60);
+  document.getElementById('s-time').textContent = mm+'m '+String(ss).padStart(2,'0')+'s';
+  document.getElementById('s-fil').textContent  = totalE.toFixed(1)+' mm';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LAYER / PLAY CONTROLS
+// ═══════════════════════════════════════════════════════════
+function layerStep(d)   { stopAnim(); setLayerTo(CURLAYER + d); }
+function layerFirst()   { stopAnim(); setLayerTo(1); }
+function layerLast()    { stopAnim(); setLayerTo(MAXLAYER); }
+function sliderInput(v) { stopAnim(); setLayerTo(parseInt(v)); }
+
+function playAnim() {
+  if (PLAYING || !PARSED || !MAXLAYER) return;
+  if (CURLAYER >= MAXLAYER) { CURLAYER=0; document.getElementById('layer-slider').value=0; }
+  PLAYING=true;
+  document.getElementById('btn-play').classList.add('running');
+  playStep();
+}
+function stopAnim() {
+  if (!PLAYING && !PLAY_TIMER && !PLAY_RAF) return;
+  PLAYING=false;
+  if (PLAY_TIMER) { clearTimeout(PLAY_TIMER); PLAY_TIMER=null; }
+  if (PLAY_RAF)   { cancelAnimationFrame(PLAY_RAF); PLAY_RAF=null; }
+  var pb=document.getElementById('btn-play'); if (pb) pb.classList.remove('running');
+}
+function playStep() {
+  if (!PLAYING) return;
+  if (CURLAYER >= MAXLAYER) { stopAnim(); return; }
+  CURLAYER++;
+  document.getElementById('layer-slider').value = CURLAYER;
+  updateLayerView();
+  var speed = parseInt(document.getElementById('speed-slider').value);
+  if (speed >= 100) PLAY_RAF = requestAnimationFrame(playStep);
+  else { var delay=Math.round((100-speed)*10); PLAY_TIMER=setTimeout(function(){PLAY_TIMER=null;playStep();},delay); }
+}
+
+function toggleCumul() {
+  CUMULATIVE = !CUMULATIVE;
+  document.getElementById('btn-cumul').classList.toggle('active', CUMULATIVE);
+  document.getElementById('btn-cumul').textContent = CUMULATIVE ? 'CUM' : 'SGL';
+  updateLayerView();
+}
+function toggleTravel() {
+  SHOW_TRAVEL = !SHOW_TRAVEL;
+  var b=document.getElementById('btn-travel');
+  b.textContent='Travel: '+(SHOW_TRAVEL?'ein':'aus');
+  b.classList.toggle('active',SHOW_TRAVEL);
+  if (PARSED) { buildSimGeometry(PARSED,CURLAYER,CUMULATIVE); updateLegend(); }
+}
+function setColorMode(m) {
+  COLOR_MODE = m;
+  ['type','speed','layer','overhang'].forEach(function(id){
+    document.getElementById('cm-'+id).classList.toggle('active', id===m);
+  });
+  if (PARSED) { buildSimGeometry(PARSED,CURLAYER,CUMULATIVE); updateLegend(); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILE I/O + DRAG & DROP
+// ═══════════════════════════════════════════════════════════
+function loadFile() {
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='.gcode,.g,.nc,.ngc,.txt';
+  inp.onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){applyFile(ev.target.result,f.name);};r.readAsText(f);};
+  inp.click();
+}
+function saveFile() {
+  var blob=new Blob([ED.getValue()],{type:'text/plain'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  var fn=document.getElementById('hdr-filename').textContent;
+  a.download=(fn==='Keine Datei'?'output':fn.replace(/\.gcode$/i,''))+'.gcode'; a.click(); flash('Gespeichert: '+a.download);
+}
+function applyFile(text,name) {
+  ED.setValue(text);
+  document.getElementById('hdr-filename').textContent=name||'output.gcode';
   runSim();
 }
+var ov=document.getElementById('drop-ov');
+document.addEventListener('dragover',  function(e){e.preventDefault();ov.classList.add('on');});
+document.addEventListener('dragleave', function(e){if(!e.relatedTarget)ov.classList.remove('on');});
+document.addEventListener('drop', function(e){
+  e.preventDefault();ov.classList.remove('on');
+  var f=e.dataTransfer.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(ev){applyFile(ev.target.result,f.name);};r.readAsText(f);
+});
 
-function previewReady() {
-  // Delay to ensure DOM layout is complete
-  setTimeout(function() {
-    initPreview();
-    runSim();
-    var ro = new ResizeObserver(function() {
-      if (PREVIEW) {
-        var wrap = document.getElementById('sim-wrap');
-        var canvas = document.getElementById('sim-canvas');
-        canvas.style.width  = wrap.offsetWidth  + 'px';
-        canvas.style.height = wrap.offsetHeight + 'px';
-        PREVIEW.resize();
-      }
-    });
-    ro.observe(document.getElementById('sim-wrap'));
-  }, 100);
+// ═══════════════════════════════════════════════════════════
+//  RESIZE
+// ═══════════════════════════════════════════════════════════
+(function(){
+  var rz=document.getElementById('rsz'), rp=document.getElementById('right-panel');
+  var dr=false, sx, sw;
+  rz.addEventListener('mousedown',function(e){dr=true;sx=e.clientX;sw=rp.offsetWidth;rz.classList.add('active');e.preventDefault();});
+  document.addEventListener('mousemove',function(e){
+    if(!dr)return;
+    rp.style.width=Math.max(260,Math.min(800,sw+(sx-e.clientX)))+'px';
+    if(window.ED)ED.layout();
+  });
+  document.addEventListener('mouseup',function(){dr=false;rz.classList.remove('active');});
+})();
+window.addEventListener('resize',function(){ if(window.ED)ED.layout(); simResize(); });
+
+// ═══════════════════════════════════════════════════════════
+//  OPTIMIZATIONS
+// ═══════════════════════════════════════════════════════════
+function getLines()       {return ED.getValue().split('\n');}
+function setLines(ll,msg) {ED.setValue(ll.join('\n'));flash(msg||'Fertig');}
+function optComments()  {setLines(getLines().map(function(l){return l.split(';')[0].replace(/\([^)]*\)/g,'').trimEnd();}),'Kommentare entfernt');}
+function optEmptyLines(){setLines(getLines().filter(function(l){return l.trim()!=='';}), 'Leerzeilen entfernt');}
+function optDuplicates(){
+  var cx='__',cy='__',cz='__',cf='__', before=getLines().length;
+  var out=getLines().filter(function(line){
+    var l=line.trim().toUpperCase(),m;
+    if(!/^G0\b|^G00\b|^G1\b|^G01\b/.test(l))return true;
+    var nx=(m=l.match(/X(-?[\d.]+)/))?m[1]:cx;
+    var ny=(m=l.match(/Y(-?[\d.]+)/))?m[1]:cy;
+    var nz=(m=l.match(/Z(-?[\d.]+)/))?m[1]:cz;
+    var nf=(m=l.match(/F(-?[\d.]+)/))?m[1]:cf;
+    var ne=l.match(/E(-?[\d.]+)/);
+    if(nx===cx&&ny===cy&&nz===cz&&nf===cf&&!ne)return false;
+    cx=nx;cy=ny;cz=nz;cf=nf;return true;
+  });
+  setLines(out,'Duplikate entfernt \u00B7 '+(before-out.length)+' Zeilen');
+}
+function optFeed(){
+  var f0=prompt('Vorschub G0 (mm/min):','9000'), f1=prompt('Vorschub G1 (mm/min):','1500');
+  if(!f0||!f1)return;
+  setLines(getLines().map(function(line){
+    var l=line.trim().toUpperCase();
+    if(/^G0\b|^G00\b/.test(l))return line.replace(/F[\d.]+/i,'').trimEnd()+' F'+f0;
+    if(/^G1\b|^G01\b/.test(l)&&!line.match(/E/i))return line.replace(/F[\d.]+/i,'').trimEnd()+' F'+f1;
+    return line;
+  }),'Vorschub normiert');
+}
+function optStartGcode(){
+  ED.setValue(['G28        ; Home','G29        ; Bed leveling','G1 Z15 F5000','G92 E0','G1 F140 E30','G92 E0',''].join('\n')+ED.getValue());
+  flash('Start-G-code eingef\u00FCgt');
+}
+function optEndGcode(){
+  ED.setValue(ED.getValue()+['\nG91','G1 E-2 F2700','G1 Z10 F3000','G90','G28 X0 Y0','M104 S0','M140 S0','M84'].join('\n'));
+  flash('End-G-code eingef\u00FCgt');
+}
+function flash(msg){
+  var el=document.getElementById('s-msg'); el.textContent=msg; clearTimeout(flash._t);
+  flash._t=setTimeout(function(){el.textContent='';},3500);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -340,7 +918,6 @@ function previewReady() {
 // ═══════════════════════════════════════════════════════════
 require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
 require(['vs/editor/editor.main'], function () {
-
   monaco.languages.register({ id: 'gcode' });
   monaco.languages.setMonarchTokensProvider('gcode', {
     tokenizer: {
@@ -354,360 +931,116 @@ require(['vs/editor/editor.main'], function () {
       ]
     }
   });
-
-  // Dark theme (VS Code-like, gleich wie KUKA editor)
-  monaco.editor.defineTheme('pe-dark', {
-    base: 'vs-dark', inherit: true,
-    rules: [
-      { token: 'comment',      foreground: '6A9955', fontStyle: 'italic' },
-      { token: 'keyword',      foreground: '569CD6', fontStyle: 'bold'   },
-      { token: 'number.float', foreground: 'B5CEA8' },
-      { token: 'number',       foreground: 'B5CEA8' },
-      { token: 'type',         foreground: '4EC9B0' },
-    ],
-    colors: {
-      'editor.background':                '#1E1E1E',
-      'editor.foreground':                '#CCCCCC',
-      'editorLineNumber.foreground':       '#858585',
-      'editorLineNumber.activeForeground': '#C6C6C6',
-      'editor.selectionBackground':        '#264F78',
-      'editorCursor.foreground':           '#AEAFAD',
-      'editor.lineHighlightBackground':    '#2D2D2D',
-    }
-  });
-
-  // Light theme
-  monaco.editor.defineTheme('pe-light', {
-    base: 'vs', inherit: true,
-    rules: [
-      { token: 'comment',      foreground: '008000', fontStyle: 'italic' },
-      { token: 'keyword',      foreground: '0000FF', fontStyle: 'bold'   },
-      { token: 'number.float', foreground: '098658' },
-      { token: 'number',       foreground: '098658' },
-      { token: 'type',         foreground: '267F99' },
-    ],
-    colors: {
-      'editor.background':                '#FFFFFF',
-      'editor.foreground':                '#1E1E1E',
-      'editorLineNumber.foreground':       '#237893',
-      'editor.lineHighlightBackground':    '#F0F0F0',
-    }
-  });
+  monaco.editor.defineTheme('pe-dark',{base:'vs-dark',inherit:true,rules:[{token:'comment',foreground:'6A9955',fontStyle:'italic'},{token:'keyword',foreground:'569CD6',fontStyle:'bold'},{token:'number.float',foreground:'B5CEA8'},{token:'number',foreground:'B5CEA8'},{token:'type',foreground:'4EC9B0'}],colors:{'editor.background':'#1E1E1E','editor.foreground':'#CCCCCC','editorLineNumber.foreground':'#858585','editor.selectionBackground':'#264F78','editorCursor.foreground':'#AEAFAD','editor.lineHighlightBackground':'#2D2D2D'}});
+  monaco.editor.defineTheme('pe-light',{base:'vs',inherit:true,rules:[{token:'comment',foreground:'008000',fontStyle:'italic'},{token:'keyword',foreground:'0000FF',fontStyle:'bold'},{token:'number.float',foreground:'098658'},{token:'number',foreground:'098658'},{token:'type',foreground:'267F99'}],colors:{'editor.background':'#FFFFFF','editor.foreground':'#1E1E1E','editor.lineHighlightBackground':'#F0F0F0'}});
 
   window.ED = monaco.editor.create(document.getElementById('editor-wrap'), {
-    language: 'gcode',
-    theme:    THEME === 'krl-dark' ? 'pe-dark' : 'pe-light',
-    value:    SAMPLE_GCODE,
-    fontSize: 13,
-    fontFamily: "Consolas,'Courier New',monospace",
-    lineNumbers: 'on',
-    minimap:  { enabled: true, scale: 1 },
-    scrollBeyondLastLine: false,
-    wordWrap: 'off',
-    folding:  false,
-    quickSuggestions: false,
-    parameterHints:   { enabled: false },
-    suggestOnTriggerCharacters: false,
-    mouseWheelZoom: true,
+    language:'gcode', theme: THEME==='krl-dark'?'pe-dark':'pe-light',
+    value: SAMPLE_GCODE, fontSize:13, fontFamily:"Consolas,'Courier New',monospace",
+    lineNumbers:'on', minimap:{enabled:true,scale:1}, scrollBeyondLastLine:false,
+    wordWrap:'off', folding:false, quickSuggestions:false,
+    parameterHints:{enabled:false}, suggestOnTriggerCharacters:false, mouseWheelZoom:true,
   });
 
   var simDebounce;
-  ED.onDidChangeModelContent(function () {
-    document.getElementById('s-lines').textContent =
-      ED.getModel().getLineCount().toLocaleString('de');
-    clearTimeout(simDebounce);
-    simDebounce = setTimeout(runSim, 800);
+  ED.onDidChangeModelContent(function(){
+    document.getElementById('s-lines').textContent=ED.getModel().getLineCount().toLocaleString('de');
+    clearTimeout(simDebounce); simDebounce=setTimeout(runSim,800);
   });
-  ED.onDidChangeCursorPosition(function (e) {
-    document.getElementById('s-cur').textContent =
-      e.position.lineNumber + ':' + e.position.column;
+  ED.onDidChangeCursorPosition(function(e){
+    document.getElementById('s-cur').textContent=e.position.lineNumber+':'+e.position.column;
   });
+  document.getElementById('btn-theme').textContent = THEME==='krl-dark'?'\u2600 Hell':'\uD83C\uDF19 Dunkel';
 
-  // Apply saved theme to button label
-  var btn = document.getElementById('btn-theme');
-  btn.textContent = THEME === 'krl-dark' ? '☀ Hell' : '🌙 Dunkel';
-
-  previewReady();
+  // Three.js init nach DOM-Layout
+  setTimeout(function(){
+    simInit();
+    runSim();
+  }, 150);
 });
 
 // ═══════════════════════════════════════════════════════════
-//  SIMULATION
-// ═══════════════════════════════════════════════════════════
-function runSim() {
-  if (!window.ED || !PREVIEW) return;
-  stopAnim();
-  var text  = ED.getValue();
-  var lines = ED.getModel().getLineCount();
-  document.getElementById('s-lines').textContent = lines.toLocaleString('de');
-  var loading = document.getElementById('sim-loading');
-  if (lines > 5000) loading.classList.add('on');
-  setTimeout(function () {
-    try {
-      PREVIEW.clear();
-      PREVIEW.resize();
-      PREVIEW.processGCode(text);
-      MAXLAYER = PREVIEW.parser.layers.length;
-      CURLAYER = MAXLAYER;
-      var sl = document.getElementById('layer-slider');
-      sl.max = MAXLAYER || 1; sl.value = MAXLAYER;
-      updateLayerView();
-      updateStats();
-    } catch(e) { flash('Fehler: ' + e.message); }
-    loading.classList.remove('on');
-    flash('Simulation · ' + MAXLAYER + ' Layer');
-  }, 0);
-}
-
-function setLayerTo(n) {
-  if (!PREVIEW || !MAXLAYER) return;
-  CURLAYER = Math.max(1, Math.min(MAXLAYER, n));
-  document.getElementById('layer-slider').value = CURLAYER;
-  updateLayerView();
-}
-
-function updateLayerView() {
-  if (!PREVIEW || !MAXLAYER) return;
-  PREVIEW.endLayer      = CURLAYER;
-  PREVIEW.singleLayerMode = !CUMULATIVE;
-  PREVIEW.render();
-  document.getElementById('layer-disp').textContent = CURLAYER + ' / ' + MAXLAYER;
-  var pl   = PREVIEW.parser.layers[CURLAYER - 1];
-  var zStr = pl ? pl.z.toFixed(3) + ' mm' : '–';
-  document.getElementById('layer-z-val').textContent   = zStr;
-  document.getElementById('sim-overlay').textContent   = 'Layer ' + CURLAYER + ' / ' + MAXLAYER + '   Z = ' + zStr;
-}
-
-function updateStats() {
-  if (!PREVIEW) return;
-  document.getElementById('s-layers').textContent = PREVIEW.parser.layers.length;
-  var totalE=0, totalTime=0, pX=0,pY=0,pZ=0,pE=0,cF=2000;
-  PREVIEW.parser.lines.forEach(function(line) {
-    var l=line.trim().toUpperCase(), m;
-    if (!/^G0\b|^G00\b|^G1\b|^G01\b/.test(l)) return;
-    var nx=(m=l.match(/X(-?[\d.]+)/))?+m[1]:pX;
-    var ny=(m=l.match(/Y(-?[\d.]+)/))?+m[1]:pY;
-    var nz=(m=l.match(/Z(-?[\d.]+)/))?+m[1]:pZ;
-    var ne=(m=l.match(/E(-?[\d.]+)/))?+m[1]:pE;
-    if ((m=l.match(/F(-?[\d.]+)/))) cF=+m[1];
-    var d=Math.sqrt(Math.pow(nx-pX,2)+Math.pow(ny-pY,2)+Math.pow(nz-pZ,2));
-    if (cF>0) totalTime+=d/cF*60;
-    if (ne>pE) totalE+=ne-pE;
-    pX=nx;pY=ny;pZ=nz;pE=ne;
-  });
-  var mm=Math.floor(totalTime/60), ss=Math.floor(totalTime%60);
-  document.getElementById('s-time').textContent = mm+'m '+String(ss).padStart(2,'0')+'s';
-  document.getElementById('s-fil').textContent  = totalE.toFixed(1)+' mm';
-}
-
-// ═══════════════════════════════════════════════════════════
-//  LAYER CONTROLS
-// ═══════════════════════════════════════════════════════════
-function layerStep(d)   { stopAnim(); setLayerTo(CURLAYER + d); }
-function layerFirst()   { stopAnim(); setLayerTo(1); }
-function layerLast()    { stopAnim(); setLayerTo(MAXLAYER); }
-function sliderInput(v) { stopAnim(); setLayerTo(parseInt(v)); }
-
-function playAnim() {
-  if (PLAYING) return;
-  if (!PREVIEW || !MAXLAYER) return;
-  // Start from layer 1 if at end
-  if (CURLAYER >= MAXLAYER) {
-    CURLAYER = 0;
-    document.getElementById('layer-slider').value = 0;
-  }
-  PLAYING = true;
-  document.getElementById('btn-play').classList.add('running');
-  playStep();
-}
-
-function stopAnim() {
-  if (!PLAYING && PLAY_TIMER === null && PLAY_RAF === null) return;
-  PLAYING = false;
-  if (PLAY_TIMER !== null) { clearTimeout(PLAY_TIMER); PLAY_TIMER = null; }
-  if (PLAY_RAF   !== null) { cancelAnimationFrame(PLAY_RAF); PLAY_RAF = null; }
-  var pb = document.getElementById('btn-play');
-  if (pb) pb.classList.remove('running');
-}
-
-function playStep() {
-  if (!PLAYING) return;
-  if (CURLAYER >= MAXLAYER) { stopAnim(); return; }
-
-  CURLAYER++;
-  document.getElementById('layer-slider').value = CURLAYER;
-  PREVIEW.endLayer      = CURLAYER;
-  PREVIEW.singleLayerMode = !CUMULATIVE;
-  PREVIEW.render();
-
-  // Sync layer display
-  document.getElementById('layer-disp').textContent = CURLAYER + ' / ' + MAXLAYER;
-  var pl = PREVIEW.parser.layers[CURLAYER - 1];
-  if (pl) {
-    var zStr = pl.z.toFixed(3) + ' mm';
-    document.getElementById('layer-z-val').textContent = zStr;
-    document.getElementById('sim-overlay').textContent = 'Layer ' + CURLAYER + ' / ' + MAXLAYER + '   Z = ' + zStr;
-    // Scroll editor to the layer's start line
-    if (window.ED) {
-      var lineNum = pl.lineNumber + 1; // gcode-preview is 0-based
-      ED.revealLineInCenter(lineNum);
-      ED.setPosition({ lineNumber: lineNum, column: 1 });
-    }
-  }
-
-  var speed = parseInt(document.getElementById('speed-slider').value);
-  if (speed >= 100) {
-    PLAY_RAF = requestAnimationFrame(playStep);
-  } else {
-    // speed 1 → 990ms, speed 99 → 10ms, speed 100 → rAF
-    var delay = Math.round((100 - speed) * 10);
-    PLAY_TIMER = setTimeout(function() { PLAY_TIMER = null; playStep(); }, delay);
-  }
-}
-
-function toggleCumul() {
-  CUMULATIVE = !CUMULATIVE;
-  document.getElementById('btn-cumul').classList.toggle('active', CUMULATIVE);
-  document.getElementById('btn-cumul').textContent = CUMULATIVE ? 'CUM' : 'SGL';
-  updateLayerView();
-}
-function toggleTubes() {
-  SHOW_TUBES = !SHOW_TUBES;
-  var b = document.getElementById('btn-tubes');
-  b.textContent = 'Tubes: ' + (SHOW_TUBES ? 'ein' : 'aus');
-  b.classList.toggle('active', SHOW_TUBES);
-  initPreview(); runSim();
-}
-function toggleTravel() {
-  if (!PREVIEW) return;
-  SHOW_TRAVEL = !SHOW_TRAVEL;
-  var b = document.getElementById('btn-travel');
-  b.textContent = 'Travel: ' + (SHOW_TRAVEL ? 'ein' : 'aus');
-  b.classList.toggle('active', SHOW_TRAVEL);
-  PREVIEW.renderTravel = SHOW_TRAVEL;
-  PREVIEW.render();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  FILE I/O
-// ═══════════════════════════════════════════════════════════
-function loadFile() {
-  var inp = document.createElement('input');
-  inp.type='file'; inp.accept='.gcode,.g,.nc,.ngc,.txt';
-  inp.onchange = function(e) {
-    var f=e.target.files[0]; if(!f) return;
-    var r=new FileReader();
-    r.onload=function(ev){ applyFile(ev.target.result,f.name); };
-    r.readAsText(f);
-  };
-  inp.click();
-}
-function saveFile() {
-  var blob=new Blob([ED.getValue()],{type:'text/plain'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  var fn=document.getElementById('hdr-filename').textContent;
-  a.download=(fn==='Keine Datei'?'output':fn.replace(/\.gcode$/i,''))+'.gcode';
-  a.click(); flash('Gespeichert: '+a.download);
-}
-function applyFile(text,name) {
-  ED.setValue(text);
-  document.getElementById('hdr-filename').textContent=name||'output.gcode';
-  runSim();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  DRAG & DROP
-// ═══════════════════════════════════════════════════════════
-var ov=document.getElementById('drop-ov');
-document.addEventListener('dragover',  function(e){e.preventDefault();ov.classList.add('on');});
-document.addEventListener('dragleave', function(e){if(!e.relatedTarget)ov.classList.remove('on');});
-document.addEventListener('drop', function(e){
-  e.preventDefault(); ov.classList.remove('on');
-  var f=e.dataTransfer.files[0]; if(!f) return;
-  var r=new FileReader();
-  r.onload=function(ev){applyFile(ev.target.result,f.name);};
-  r.readAsText(f);
-});
-
-// ═══════════════════════════════════════════════════════════
-//  RESIZE
-// ═══════════════════════════════════════════════════════════
-(function(){
-  var rz=document.getElementById('rsz'), rp=document.getElementById('right-panel');
-  var dr=false, sx, sw;
-  rz.addEventListener('mousedown',function(e){dr=true;sx=e.clientX;sw=rp.offsetWidth;rz.classList.add('active');e.preventDefault();});
-  document.addEventListener('mousemove',function(e){
-    if(!dr) return;
-    rp.style.width=Math.max(260,Math.min(800,sw+(sx-e.clientX)))+'px';
-    if(window.ED) ED.layout();
-    if(PREVIEW)   PREVIEW.resize();
-  });
-  document.addEventListener('mouseup',function(){dr=false;rz.classList.remove('active');});
-})();
-window.addEventListener('resize',function(){
-  if(window.ED) ED.layout();
-  if(PREVIEW)   PREVIEW.resize();
-});
-
-// ═══════════════════════════════════════════════════════════
-//  OPTIMIZATIONS
-// ═══════════════════════════════════════════════════════════
-function getLines()       {return ED.getValue().split('\n');}
-function setLines(ll,msg) {ED.setValue(ll.join('\n'));flash(msg||'Fertig');}
-
-function optComments()  {setLines(getLines().map(function(l){return l.split(';')[0].replace(/\([^)]*\)/g,'').trimEnd();}),'Kommentare entfernt');}
-function optEmptyLines(){setLines(getLines().filter(function(l){return l.trim()!=='';}), 'Leerzeilen entfernt');}
-function optDuplicates(){
-  var cx='__',cy='__',cz='__',cf='__', before=getLines().length;
-  var out=getLines().filter(function(line){
-    var l=line.trim().toUpperCase(),m;
-    if(!/^G0\b|^G00\b|^G1\b|^G01\b/.test(l)) return true;
-    var nx=(m=l.match(/X(-?[\d.]+)/))?m[1]:cx;
-    var ny=(m=l.match(/Y(-?[\d.]+)/))?m[1]:cy;
-    var nz=(m=l.match(/Z(-?[\d.]+)/))?m[1]:cz;
-    var nf=(m=l.match(/F(-?[\d.]+)/))?m[1]:cf;
-    var ne=l.match(/E(-?[\d.]+)/);
-    if(nx===cx&&ny===cy&&nz===cz&&nf===cf&&!ne) return false;
-    cx=nx;cy=ny;cz=nz;cf=nf; return true;
-  });
-  setLines(out,'Duplikate entfernt · '+(before-out.length)+' Zeilen');
-}
-function optFeed(){
-  var f0=prompt('Vorschub G0 (mm/min):','9000'), f1=prompt('Vorschub G1 (mm/min):','1500');
-  if(!f0||!f1) return;
-  setLines(getLines().map(function(line){
-    var l=line.trim().toUpperCase();
-    if(/^G0\b|^G00\b/.test(l)) return line.replace(/F[\d.]+/i,'').trimEnd()+' F'+f0;
-    if(/^G1\b|^G01\b/.test(l)&&!line.match(/E/i)) return line.replace(/F[\d.]+/i,'').trimEnd()+' F'+f1;
-    return line;
-  }),'Vorschub normiert');
-}
-function optStartGcode(){
-  ED.setValue(['G28        ; Home','G29        ; Bed leveling','G1 Z15 F5000','G92 E0','G1 F140 E30','G92 E0',''].join('\n')+ED.getValue());
-  flash('Start-G-code eingefügt');
-}
-function optEndGcode(){
-  ED.setValue(ED.getValue()+['\nG91','G1 E-2 F2700','G1 Z10 F3000','G90','G28 X0 Y0','M104 S0','M140 S0','M84'].join('\n'));
-  flash('End-G-code eingefügt');
-}
-
-function flash(msg){
-  var el=document.getElementById('s-msg');
-  el.textContent=msg; clearTimeout(flash._t);
-  flash._t=setTimeout(function(){el.textContent='';},3500);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  SAMPLE
+//  SAMPLE G-CODE (mit Typ-Kommentaren für Demo)
 // ═══════════════════════════════════════════════════════════
 var SAMPLE_GCODE=[
-';  printEdit – Beispiel G-code (Cura)','M104 S200','M140 S60','M109 S200','M190 S60','G28','G92 E0','',
-'G0 F3600 X10 Y10 Z0.2','G1 F1500 X110 Y10 E4.0','G1 X110 Y110 E9.0','G1 X10 Y110 E14.0','G1 X10 Y10 E18.0',
-'G0 X25 Y25','G1 X95 Y25 E21.0','G1 X95 Y95 E24.0','G1 X25 Y95 E27.0','G1 X25 Y25 E30.0','',
-'G0 F3600 X10 Y10 Z0.4','G1 F1500 X110 Y10 E34.0','G1 X110 Y110 E39.0','G1 X10 Y110 E44.0','G1 X10 Y10 E49.0',
-'G0 X25 Y25','G1 X95 Y25 E52.0','G1 X95 Y95 E55.0','G1 X25 Y95 E58.0','G1 X25 Y25 E61.0','',
-'G0 F3600 X10 Y10 Z0.6','G1 F1500 X110 Y10 E65.0','G1 X110 Y110 E70.0','G1 X10 Y110 E75.0','G1 X10 Y10 E80.0','',
-'G0 F3600 X10 Y10 Z0.8','G1 F1500 X110 Y10 E84.0','G1 X110 Y110 E89.0','G1 X10 Y110 E94.0','G1 X10 Y10 E99.0','',
+';  printEdit \u2013 Beispiel G-code (Cura-Format)',
+'M104 S200','M140 S60','M109 S200','M190 S60','G28','G92 E0','',
+'; Layer 1 - Z=0.2',
+'G0 F3600 X10 Y10 Z0.2',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E4.0','G1 X110 Y110 E9.0','G1 X10 Y110 E14.0','G1 X10 Y10 E18.0',
+';TYPE:WALL-INNER',
+'G1 F1400 X20 Y20 E18.5','G1 X100 Y20 E22.0','G1 X100 Y100 E25.5','G1 X20 Y100 E29.0','G1 X20 Y20 E32.5',
+';TYPE:FILL',
+'G1 F2000 X30 Y30 E33.0',
+'G1 X100 Y30 E35.5','G1 X100 Y40 E35.7','G1 X30 Y40 E38.2',
+'G1 X30 Y50 E38.4','G1 X100 Y50 E40.9',
+'G1 X30 Y60 E43.4','G1 X100 Y60 E45.9',
+'G1 X30 Y70 E48.4','G1 X100 Y70 E50.9',
+'G1 X30 Y80 E53.4','G1 X100 Y80 E55.9',
+'G1 X30 Y90 E58.4','G1 X100 Y90 E60.9',
+'',
+'; Layer 2 - Z=0.4',
+'G0 F3600 X10 Y10 Z0.4',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E64.9','G1 X110 Y110 E69.9','G1 X10 Y110 E74.9','G1 X10 Y10 E79.9',
+';TYPE:SKIN',
+'G1 F1800 X20 Y20 E80.4',
+'G1 X100 Y20 E83.6','G1 X20 Y28 E86.8','G1 X100 Y28 E90.0',
+'G1 X20 Y36 E93.2','G1 X100 Y36 E96.4',
+'G1 X20 Y44 E99.6','G1 X100 Y44 E102.8',
+'G1 X20 Y52 E106.0','G1 X100 Y52 E109.2',
+'G1 X20 Y60 E112.4','G1 X100 Y60 E115.6',
+'G1 X20 Y68 E118.8','G1 X100 Y68 E122.0',
+'G1 X20 Y76 E125.2','G1 X100 Y76 E128.4',
+'G1 X20 Y84 E131.6','G1 X100 Y84 E134.8',
+'G1 X20 Y92 E138.0','G1 X100 Y92 E141.2',
+'',
+'; Layer 3 - Z=0.6',
+'G0 F3600 X10 Y10 Z0.6',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E145.2','G1 X110 Y110 E150.2','G1 X10 Y110 E155.2','G1 X10 Y10 E160.2',
+';TYPE:WALL-INNER',
+'G1 F1400 X20 Y20 E160.7','G1 X100 Y20 E164.2','G1 X100 Y100 E167.7','G1 X20 Y100 E171.2','G1 X20 Y20 E174.7',
+';TYPE:FILL',
+'G1 F2000 X30 Y30 E175.2',
+'G1 X100 Y30 E177.7','G1 X100 Y40 E177.9','G1 X30 Y40 E180.4',
+'G1 X30 Y50 E180.6','G1 X100 Y50 E183.1',
+'',
+'; Layer 4 - Z=0.8',
+'G0 F3600 X10 Y10 Z0.8',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E187.1','G1 X110 Y110 E192.1','G1 X10 Y110 E197.1','G1 X10 Y10 E202.1',
+';TYPE:FILL',
+'G1 F2000 X30 Y90 E202.6','G1 X100 Y30 E207.6',
+'G1 X30 Y30 E207.6','G1 X100 Y90 E212.6',
+'',
+'; Layer 5 - Z=1.0',
+'G0 F3600 X10 Y10 Z1.0',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E216.6','G1 X110 Y110 E221.6','G1 X10 Y110 E226.6','G1 X10 Y10 E231.6',
+';TYPE:TOP-SURFACE',
+'G1 F1800 X20 Y20 E232.1',
+'G1 X100 Y20 E235.3','G1 X20 Y24 E238.5','G1 X100 Y24 E241.7',
+'G1 X20 Y28 E244.9','G1 X100 Y28 E248.1',
+'G1 X20 Y32 E251.3','G1 X100 Y32 E254.5',
+'G1 X20 Y36 E257.7','G1 X100 Y36 E260.9',
+'G1 X20 Y40 E264.1','G1 X100 Y40 E267.3',
+'G1 X20 Y44 E270.5','G1 X100 Y44 E273.7',
+'G1 X20 Y48 E276.9','G1 X100 Y48 E280.1',
+'G1 X20 Y52 E283.3','G1 X100 Y52 E286.5',
+'G1 X20 Y56 E289.7','G1 X100 Y56 E292.9',
+'G1 X20 Y60 E296.1','G1 X100 Y60 E299.3',
+'G1 X20 Y64 E302.5','G1 X100 Y64 E305.7',
+'G1 X20 Y68 E308.9','G1 X100 Y68 E312.1',
+'G1 X20 Y72 E315.3','G1 X100 Y72 E318.5',
+'G1 X20 Y76 E321.7','G1 X100 Y76 E324.9',
+'G1 X20 Y80 E328.1','G1 X100 Y80 E331.3',
+'G1 X20 Y84 E334.5','G1 X100 Y84 E337.7',
+'G1 X20 Y88 E340.9','G1 X100 Y88 E344.1',
+'G1 X20 Y92 E347.3','G1 X100 Y92 E350.5',
+'G1 X20 Y96 E353.7','G1 X100 Y96 E356.9',
+'',
 'M104 S0','M140 S0','G28 X0 Y0','M84'
 ].join('\n');
 </script>
