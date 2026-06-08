@@ -168,7 +168,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- Datei -->
   <div class="mb-item" id="mbi-file">
-    <button class="mb-btn" onclick="mbToggle('file')">Datei</button>
+    <button class="mb-btn" onclick=\"mbToggle('file', event)\">Datei</button>
     <div class="mb-dropdown" id="mbd-file">
       <div class="mb-mi" onclick="mbExamples()">Beispielprogramme &#246;ffnen&#8230;</div>
       <div class="mb-sep"></div>
@@ -185,7 +185,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- Bearbeiten -->
   <div class="mb-item" id="mbi-edit">
-    <button class="mb-btn" onclick="mbToggle('edit')">Bearbeiten</button>
+    <button class="mb-btn" onclick=\"mbToggle('edit', event)\">Bearbeiten</button>
     <div class="mb-dropdown" id="mbd-edit">
       <div class="mb-mi" onclick="mbUndo()">R&#252;ckg&#228;ngig<span class="shortcut">Ctrl+Z</span></div>
       <div class="mb-mi" onclick="mbRedo()">Wiederholen<span class="shortcut">Ctrl+Y</span></div>
@@ -201,7 +201,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- CNC Code -->
   <div class="mb-item" id="mbi-cnc">
-    <button class="mb-btn" onclick="mbToggle('cnc')">CNC Code</button>
+    <button class="mb-btn" onclick=\"mbToggle('cnc', event)\">CNC Code</button>
     <div class="mb-dropdown" id="mbd-cnc">
       <div class="mb-mi" onclick="mbMacro()">Makro-Verwaltung&#8230;</div>
       <div class="mb-mi" onclick="mbSyntax()">Syntax Highlight</div>
@@ -210,7 +210,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- Ansicht -->
   <div class="mb-item" id="mbi-view">
-    <button class="mb-btn" onclick="mbToggle('view')">Ansicht</button>
+    <button class="mb-btn" onclick=\"mbToggle('view', event)\">Ansicht</button>
     <div class="mb-dropdown" id="mbd-view">
       <div class="mb-mi" onclick="toggleTheme()" id="mi-theme">Dunkles Theme</div>
       <div class="mb-sep"></div>
@@ -228,7 +228,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <!-- Hilfe -->
   <div class="mb-item" id="mbi-help">
-    <button class="mb-btn" onclick="mbToggle('help')">Hilfe</button>
+    <button class="mb-btn" onclick=\"mbToggle('help', event)\">Hilfe</button>
     <div class="mb-dropdown" id="mbd-help">
       <div class="mb-mi" onclick="mbDocs()">Dokumentation&#8230;</div>
       <div class="mb-sep"></div>
@@ -1846,6 +1846,88 @@ THREE.OrbitControls = OrbitControls;
 <script>
 'use strict';
 
+var SAMPLE_GCODE=[
+';  printEdit \u2013 Beispiel G-code (Cura-Format)',
+'M104 S200','M140 S60','M109 S200','M190 S60','G28','G92 E0','',
+'; Layer 1 - Z=0.2',
+'G0 F3600 X10 Y10 Z0.2',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E4.0','G1 X110 Y110 E9.0','G1 X10 Y110 E14.0','G1 X10 Y10 E18.0',
+';TYPE:WALL-INNER',
+'G1 F1400 X20 Y20 E18.5','G1 X100 Y20 E22.0','G1 X100 Y100 E25.5','G1 X20 Y100 E29.0','G1 X20 Y20 E32.5',
+';TYPE:FILL',
+'G1 F2000 X30 Y30 E33.0',
+'G1 X100 Y30 E35.5','G1 X100 Y40 E35.7','G1 X30 Y40 E38.2',
+'G1 X30 Y50 E38.4','G1 X100 Y50 E40.9',
+'G1 X30 Y60 E43.4','G1 X100 Y60 E45.9',
+'G1 X30 Y70 E48.4','G1 X100 Y70 E50.9',
+'G1 X30 Y80 E53.4','G1 X100 Y80 E55.9',
+'G1 X30 Y90 E58.4','G1 X100 Y90 E60.9',
+'',
+'; Layer 2 - Z=0.4',
+'G0 F3600 X10 Y10 Z0.4',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E64.9','G1 X110 Y110 E69.9','G1 X10 Y110 E74.9','G1 X10 Y10 E79.9',
+';TYPE:SKIN',
+'G1 F1800 X20 Y20 E80.4',
+'G1 X100 Y20 E83.6','G1 X20 Y28 E86.8','G1 X100 Y28 E90.0',
+'G1 X20 Y36 E93.2','G1 X100 Y36 E96.4',
+'G1 X20 Y44 E99.6','G1 X100 Y44 E102.8',
+'G1 X20 Y52 E106.0','G1 X100 Y52 E109.2',
+'G1 X20 Y60 E112.4','G1 X100 Y60 E115.6',
+'G1 X20 Y68 E118.8','G1 X100 Y68 E122.0',
+'G1 X20 Y76 E125.2','G1 X100 Y76 E128.4',
+'G1 X20 Y84 E131.6','G1 X100 Y84 E134.8',
+'G1 X20 Y92 E138.0','G1 X100 Y92 E141.2',
+'',
+'; Layer 3 - Z=0.6',
+'G0 F3600 X10 Y10 Z0.6',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E145.2','G1 X110 Y110 E150.2','G1 X10 Y110 E155.2','G1 X10 Y10 E160.2',
+';TYPE:WALL-INNER',
+'G1 F1400 X20 Y20 E160.7','G1 X100 Y20 E164.2','G1 X100 Y100 E167.7','G1 X20 Y100 E171.2','G1 X20 Y20 E174.7',
+';TYPE:FILL',
+'G1 F2000 X30 Y30 E175.2',
+'G1 X100 Y30 E177.7','G1 X100 Y40 E177.9','G1 X30 Y40 E180.4',
+'G1 X30 Y50 E180.6','G1 X100 Y50 E183.1',
+'',
+'; Layer 4 - Z=0.8',
+'G0 F3600 X10 Y10 Z0.8',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E187.1','G1 X110 Y110 E192.1','G1 X10 Y110 E197.1','G1 X10 Y10 E202.1',
+';TYPE:FILL',
+'G1 F2000 X30 Y90 E202.6','G1 X100 Y30 E207.6',
+'G1 X30 Y30 E207.6','G1 X100 Y90 E212.6',
+'',
+'; Layer 5 - Z=1.0',
+'G0 F3600 X10 Y10 Z1.0',
+';TYPE:WALL-OUTER',
+'G1 F1500 X110 Y10 E216.6','G1 X110 Y110 E221.6','G1 X10 Y110 E226.6','G1 X10 Y10 E231.6',
+';TYPE:TOP-SURFACE',
+'G1 F1800 X20 Y20 E232.1',
+'G1 X100 Y20 E235.3','G1 X20 Y24 E238.5','G1 X100 Y24 E241.7',
+'G1 X20 Y28 E244.9','G1 X100 Y28 E248.1',
+'G1 X20 Y32 E251.3','G1 X100 Y32 E254.5',
+'G1 X20 Y36 E257.7','G1 X100 Y36 E260.9',
+'G1 X20 Y40 E264.1','G1 X100 Y40 E267.3',
+'G1 X20 Y44 E270.5','G1 X100 Y44 E273.7',
+'G1 X20 Y48 E276.9','G1 X100 Y48 E280.1',
+'G1 X20 Y52 E283.3','G1 X100 Y52 E286.5',
+'G1 X20 Y56 E289.7','G1 X100 Y56 E292.9',
+'G1 X20 Y60 E296.1','G1 X100 Y60 E299.3',
+'G1 X20 Y64 E302.5','G1 X100 Y64 E305.7',
+'G1 X20 Y68 E308.9','G1 X100 Y68 E312.1',
+'G1 X20 Y72 E315.3','G1 X100 Y72 E318.5',
+'G1 X20 Y76 E321.7','G1 X100 Y76 E324.9',
+'G1 X20 Y80 E328.1','G1 X100 Y80 E331.3',
+'G1 X20 Y84 E334.5','G1 X100 Y84 E337.7',
+'G1 X20 Y88 E340.9','G1 X100 Y88 E344.1',
+'G1 X20 Y92 E347.3','G1 X100 Y92 E350.5',
+'G1 X20 Y96 E353.7','G1 X100 Y96 E356.9',
+'',
+'M104 S0','M140 S0','G28 X0 Y0','M84'
+].join('\n');
+
 // ═══════════════════════════════════════════════════════════
 //  MENÜ-SYSTEM
 // ═══════════════════════════════════════════════════════════
@@ -1854,18 +1936,20 @@ var MENU_FONT_SIZE = 20; // body font-size px
 var MINIMAP_ON = true;
 var WORDWRAP_ON = false;
 
-function mbToggle(id) {
+function mbToggle(id, event) {
+  if (event) event.stopPropagation();
+  var wasOpen = MB_OPEN === id;
   // Alle schließen
   ['file','edit','cnc','view','help'].forEach(function(k) {
     document.getElementById('mbd-'+k).classList.remove('show');
     document.getElementById('mbi-'+k).querySelector('.mb-btn').classList.remove('open');
   });
-  if (MB_OPEN === id) { MB_OPEN = null; return; }
+  MB_OPEN = null;
+  if (wasOpen) return;
   MB_OPEN = id;
   var btn = document.getElementById('mbi-'+id).querySelector('.mb-btn');
   var drop = document.getElementById('mbd-'+id);
   btn.classList.add('open');
-  // Position berechnen
   var rect = btn.getBoundingClientRect();
   drop.style.left = rect.left + 'px';
   drop.style.top  = rect.bottom + 'px';
@@ -1884,7 +1968,7 @@ function mbClose() {
 
 // Klick außerhalb schließt Menü
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('.mb-item')) mbClose();
+  if (!e.target.closest('.mb-item') && !e.target.closest('.mb-dropdown')) mbClose();
 });
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { mbClose(); mbCloseAllModals(); }
@@ -3188,90 +3272,11 @@ require(['vs/editor/editor.main'], function () {
 // ═══════════════════════════════════════════════════════════
 //  SAMPLE G-CODE (mit Typ-Kommentaren für Demo)
 // ═══════════════════════════════════════════════════════════
-var SAMPLE_GCODE=[
-';  printEdit \u2013 Beispiel G-code (Cura-Format)',
-'M104 S200','M140 S60','M109 S200','M190 S60','G28','G92 E0','',
-'; Layer 1 - Z=0.2',
-'G0 F3600 X10 Y10 Z0.2',
-';TYPE:WALL-OUTER',
-'G1 F1500 X110 Y10 E4.0','G1 X110 Y110 E9.0','G1 X10 Y110 E14.0','G1 X10 Y10 E18.0',
-';TYPE:WALL-INNER',
-'G1 F1400 X20 Y20 E18.5','G1 X100 Y20 E22.0','G1 X100 Y100 E25.5','G1 X20 Y100 E29.0','G1 X20 Y20 E32.5',
-';TYPE:FILL',
-'G1 F2000 X30 Y30 E33.0',
-'G1 X100 Y30 E35.5','G1 X100 Y40 E35.7','G1 X30 Y40 E38.2',
-'G1 X30 Y50 E38.4','G1 X100 Y50 E40.9',
-'G1 X30 Y60 E43.4','G1 X100 Y60 E45.9',
-'G1 X30 Y70 E48.4','G1 X100 Y70 E50.9',
-'G1 X30 Y80 E53.4','G1 X100 Y80 E55.9',
-'G1 X30 Y90 E58.4','G1 X100 Y90 E60.9',
-'',
-'; Layer 2 - Z=0.4',
-'G0 F3600 X10 Y10 Z0.4',
-';TYPE:WALL-OUTER',
-'G1 F1500 X110 Y10 E64.9','G1 X110 Y110 E69.9','G1 X10 Y110 E74.9','G1 X10 Y10 E79.9',
-';TYPE:SKIN',
-'G1 F1800 X20 Y20 E80.4',
-'G1 X100 Y20 E83.6','G1 X20 Y28 E86.8','G1 X100 Y28 E90.0',
-'G1 X20 Y36 E93.2','G1 X100 Y36 E96.4',
-'G1 X20 Y44 E99.6','G1 X100 Y44 E102.8',
-'G1 X20 Y52 E106.0','G1 X100 Y52 E109.2',
-'G1 X20 Y60 E112.4','G1 X100 Y60 E115.6',
-'G1 X20 Y68 E118.8','G1 X100 Y68 E122.0',
-'G1 X20 Y76 E125.2','G1 X100 Y76 E128.4',
-'G1 X20 Y84 E131.6','G1 X100 Y84 E134.8',
-'G1 X20 Y92 E138.0','G1 X100 Y92 E141.2',
-'',
-'; Layer 3 - Z=0.6',
-'G0 F3600 X10 Y10 Z0.6',
-';TYPE:WALL-OUTER',
-'G1 F1500 X110 Y10 E145.2','G1 X110 Y110 E150.2','G1 X10 Y110 E155.2','G1 X10 Y10 E160.2',
-';TYPE:WALL-INNER',
-'G1 F1400 X20 Y20 E160.7','G1 X100 Y20 E164.2','G1 X100 Y100 E167.7','G1 X20 Y100 E171.2','G1 X20 Y20 E174.7',
-';TYPE:FILL',
-'G1 F2000 X30 Y30 E175.2',
-'G1 X100 Y30 E177.7','G1 X100 Y40 E177.9','G1 X30 Y40 E180.4',
-'G1 X30 Y50 E180.6','G1 X100 Y50 E183.1',
-'',
-'; Layer 4 - Z=0.8',
-'G0 F3600 X10 Y10 Z0.8',
-';TYPE:WALL-OUTER',
-'G1 F1500 X110 Y10 E187.1','G1 X110 Y110 E192.1','G1 X10 Y110 E197.1','G1 X10 Y10 E202.1',
-';TYPE:FILL',
-'G1 F2000 X30 Y90 E202.6','G1 X100 Y30 E207.6',
-'G1 X30 Y30 E207.6','G1 X100 Y90 E212.6',
-'',
-'; Layer 5 - Z=1.0',
-'G0 F3600 X10 Y10 Z1.0',
-';TYPE:WALL-OUTER',
-'G1 F1500 X110 Y10 E216.6','G1 X110 Y110 E221.6','G1 X10 Y110 E226.6','G1 X10 Y10 E231.6',
-';TYPE:TOP-SURFACE',
-'G1 F1800 X20 Y20 E232.1',
-'G1 X100 Y20 E235.3','G1 X20 Y24 E238.5','G1 X100 Y24 E241.7',
-'G1 X20 Y28 E244.9','G1 X100 Y28 E248.1',
-'G1 X20 Y32 E251.3','G1 X100 Y32 E254.5',
-'G1 X20 Y36 E257.7','G1 X100 Y36 E260.9',
-'G1 X20 Y40 E264.1','G1 X100 Y40 E267.3',
-'G1 X20 Y44 E270.5','G1 X100 Y44 E273.7',
-'G1 X20 Y48 E276.9','G1 X100 Y48 E280.1',
-'G1 X20 Y52 E283.3','G1 X100 Y52 E286.5',
-'G1 X20 Y56 E289.7','G1 X100 Y56 E292.9',
-'G1 X20 Y60 E296.1','G1 X100 Y60 E299.3',
-'G1 X20 Y64 E302.5','G1 X100 Y64 E305.7',
-'G1 X20 Y68 E308.9','G1 X100 Y68 E312.1',
-'G1 X20 Y72 E315.3','G1 X100 Y72 E318.5',
-'G1 X20 Y76 E321.7','G1 X100 Y76 E324.9',
-'G1 X20 Y80 E328.1','G1 X100 Y80 E331.3',
-'G1 X20 Y84 E334.5','G1 X100 Y84 E337.7',
-'G1 X20 Y88 E340.9','G1 X100 Y88 E344.1',
-'G1 X20 Y92 E347.3','G1 X100 Y92 E350.5',
-'G1 X20 Y96 E353.7','G1 X100 Y96 E356.9',
-'',
-'M104 S0','M140 S0','G28 X0 Y0','M84'
-].join('\n');
+// SAMPLE_GCODE moved to top
 </script>
 </body>
 </html>
+
 
 
 
