@@ -57,7 +57,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .s-btn.play.running{background:var(--accent);color:#fff}
 .layer-disp{color:var(--accent);font-family:monospace;font-size:.8em;min-width:66px;text-align:center;flex-shrink:0}
 .slider-row{height:28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0;}
-#layer-slider{flex:1;accent-color:var(--accent);cursor:pointer;height:14px}
+#step-slider{flex:1;accent-color:var(--accent);cursor:pointer;height:14px}
 .layer-z{color:var(--text3);font-family:monospace;font-size:.7em;min-width:76px;text-align:right;flex-shrink:0}
 /* color mode row */
 .cmode-row{height:26px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0;font-family:monospace;font-size:.68em;color:var(--text3);}
@@ -2175,7 +2175,7 @@ function updateLayerView() {
 function setLayerTo(n) {
   if (!PARSED || !MAXLAYER) return;
   CURLAYER = Math.max(1, Math.min(MAXLAYER, n));
-  document.getElementById('layer-slider').value = CURLAYER;
+  document.getElementById('step-slider').value = CURLAYER;
   updateLayerView();
 }
 
@@ -2565,5 +2565,6 @@ var SAMPLE_GCODE=[
 </script>
 </body>
 </html>
+
 
 
