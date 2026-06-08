@@ -1937,18 +1937,32 @@ var MINIMAP_ON = true;
 var WORDWRAP_ON = false;
 
 function mbToggle(id, event) {
-  if (event) { event.stopPropagation(); event.preventDefault(); }
-  var wasOpen = MB_OPEN === id;
-  mbClose();
+  if (event) { event.stopPropagation(); }
+  var wasOpen = (MB_OPEN === id);
+  // Alle schliessen
+  ['file','edit','cnc','view','help'].forEach(function(k) {
+    var el = document.getElementById('mbi-'+k);
+    if (el) el.removeAttribute('data-open');
+  });
+  MB_OPEN = null;
   if (wasOpen) return;
-  MB_OPEN = id;
-  document.getElementById('mbi-'+id).setAttribute('data-open','1');
+  // Oeffnen mit kurzer Verzoegerung fuer Safari-Kompatibilitaet
+  var el = document.getElementById('mbi-'+id);
+  if (el) {
+    MB_OPEN = id;
+    el.setAttribute('data-open','1');
+    // Safari: explizit display setzen falls CSS-Attribut-Selektor nicht greift
+    var drop = document.getElementById('mbd-'+id);
+    if (drop) drop.style.display = 'block';
+  }
 }
 
 function mbClose() {
   ['file','edit','cnc','view','help'].forEach(function(k) {
     var el = document.getElementById('mbi-'+k);
     if (el) el.removeAttribute('data-open');
+    var drop = document.getElementById('mbd-'+k);
+    if (drop) drop.style.display = '';
   });
   MB_OPEN = null;
 }
