@@ -42,7 +42,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .status .v{color:var(--text2)}
 .status .va{color:var(--accent)}
 #s-msg{color:#4ec9b0;margin-left:auto;white-space:nowrap}
-.main{display:flex;height:calc(100vh - 57px);overflow:hidden}
+.main{display:flex;height:calc(100vh - 74px);overflow:hidden}
 .editor-panel{flex:1;min-width:0;display:flex;flex-direction:column;min-width:200px}
 #editor-wrap{flex:1;min-height:0}
 .rsz{width:4px;background:var(--border);cursor:col-resize;flex-shrink:0}
@@ -85,21 +85,277 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 ::-webkit-scrollbar-track{background:var(--scrollbar-track)}
 ::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--scrollbar-thumb-hover)}
+
+/* ── Menüleiste ─────────────────────────────────────────── */
+.menubar{
+  height:30px;background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0;flex-shrink:0;user-select:none;position:relative;z-index:500;
+}
+.menubar-logo{
+  padding:0 14px;font-weight:700;font-size:.82em;color:#F0A030;
+  letter-spacing:.5px;border-right:1px solid var(--border);height:100%;
+  display:flex;align-items:center;flex-shrink:0;font-family:monospace;
+}
+.mb-item{position:relative;height:100%}
+.mb-btn{
+  background:transparent;border:none;color:var(--text1);
+  padding:0 12px;height:100%;cursor:pointer;font-size:.82em;
+  font-family:inherit;outline:none;white-space:nowrap;
+}
+.mb-btn:hover,.mb-btn.open{background:var(--bg-hover)}
+.mb-dropdown{
+  display:none;position:fixed;min-width:240px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  z-index:1000;padding:4px 0;
+}
+.mb-dropdown.show{display:block}
+.mb-mi{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 16px 5px 12px;cursor:pointer;font-size:.8em;
+  color:var(--text1);gap:24px;white-space:nowrap;
+}
+.mb-mi:hover{background:var(--bg-hover)}
+.mb-mi.disabled{color:var(--text3);cursor:default;pointer-events:none}
+.mb-mi .shortcut{color:var(--text3);font-size:.85em;font-family:monospace}
+.mb-sep{height:1px;background:var(--border);margin:3px 0}
+/* Modal-Backdrop */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);
+  z-index:2000;align-items:center;justify-content:center;
+}
+.modal-backdrop.show{display:flex}
+.modal-box{
+  background:var(--bg2);border:1px solid #555;border-radius:6px;
+  padding:24px;min-width:360px;max-width:95vw;color:var(--text1);
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+}
+.modal-box h3{margin:0 0 16px;font-size:.95em}
+.modal-input{
+  width:100%;background:var(--bg-input);border:1px solid var(--border);
+  color:var(--text1);border-radius:3px;padding:5px 8px;font-size:.85em;
+  font-family:monospace;margin-bottom:14px;
+}
+.modal-input:focus{outline:2px solid var(--accent)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{
+  background:var(--bg3);border:1px solid var(--border);color:var(--text1);
+  border-radius:3px;padding:5px 14px;cursor:pointer;font-size:.8em;font-family:inherit;
+}
+.modal-btns button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.modal-btns button:hover{border-color:var(--accent);color:var(--accent)}
+.modal-btns button.primary:hover{opacity:.85;color:#fff}
+/* Über-Dialog */
+#modal-about .modal-box{min-width:320px;text-align:center}
+#modal-about .about-logo{color:var(--accent);font-size:1.5em;font-weight:700;font-family:monospace;margin-bottom:6px}
+#modal-about p{font-size:.78em;color:var(--text2);margin:3px 0}
+/* Share-Dialog */
+#modal-share textarea{
+  width:100%;height:80px;background:var(--bg-input);border:1px solid var(--border);
+  color:var(--text1);border-radius:3px;padding:6px 8px;font-size:.75em;
+  font-family:monospace;resize:none;margin-bottom:10px;
+}
+/* Transformation-Dialog */
+#modal-transform .tf-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+#modal-transform label{font-size:.75em;color:var(--text3);display:block;margin-bottom:3px}
 </style>
 </head>
 <body>
 
-<div class="hdr">
-  <span class="hdr-logo">printEdit</span>
-  <span class="hdr-brand">Datentechnik Reitz</span>
-  <div class="hdr-sep"></div>
-  <button class="hdr-btn" onclick="loadFile()">&#128194; Laden</button>
-  <button class="hdr-btn" onclick="saveFile()">&#128190; Speichern</button>
-  <div class="hdr-sep"></div>
-  <button class="hdr-btn" onclick="toggleTravel()" id="btn-travel">Travel: aus</button>
-  <button class="hdr-btn" onclick="toggleTheme()" id="btn-theme">&#9728; Hell</button>
-  <div class="hdr-spacer"></div>
-  <span id="hdr-filename">Keine Datei</span>
+<!-- ── Menüleiste ─────────────────────────────── -->
+<div class="menubar" id="menubar">
+  <div class="menubar-logo">printEdit</div>
+
+  <!-- Datei -->
+  <div class="mb-item" id="mbi-file">
+    <button class="mb-btn" onclick="mbToggle('file')">Datei</button>
+    <div class="mb-dropdown" id="mbd-file">
+      <div class="mb-mi" onclick="mbExamples()">Beispielprogramme &#246;ffnen&#8230;</div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbNew()">Neu<span class="shortcut">Ctrl+N</span></div>
+      <div class="mb-mi" onclick="loadFile()">&#214;ffnen&#8230;<span class="shortcut">Ctrl+O</span></div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="saveFile()">Speichern<span class="shortcut">Ctrl+S</span></div>
+      <div class="mb-mi" onclick="mbSaveAs()">Speichern unter&#8230;<span class="shortcut">Ctrl+Shift+S</span></div>
+      <div class="mb-mi" onclick="mbRename()">Umbenennen&#8230;</div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbShare()">Code teilen&#8230;</div>
+    </div>
+  </div>
+
+  <!-- Bearbeiten -->
+  <div class="mb-item" id="mbi-edit">
+    <button class="mb-btn" onclick="mbToggle('edit')">Bearbeiten</button>
+    <div class="mb-dropdown" id="mbd-edit">
+      <div class="mb-mi" onclick="mbUndo()">R&#252;ckg&#228;ngig<span class="shortcut">Ctrl+Z</span></div>
+      <div class="mb-mi" onclick="mbRedo()">Wiederholen<span class="shortcut">Ctrl+Y</span></div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbFind()">Suchen&#8230;<span class="shortcut">Ctrl+F</span></div>
+      <div class="mb-mi" onclick="mbReplace()">Suchen &amp; Ersetzen&#8230;<span class="shortcut">Ctrl+H</span></div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbComment()">Ein-/Auskommentieren<span class="shortcut">Ctrl+/</span></div>
+      <div class="mb-mi" onclick="mbMirror()">Positionen spiegeln&#8230;</div>
+      <div class="mb-mi" onclick="mbTransform()">Transformation&#8230;</div>
+    </div>
+  </div>
+
+  <!-- CNC Code -->
+  <div class="mb-item" id="mbi-cnc">
+    <button class="mb-btn" onclick="mbToggle('cnc')">CNC Code</button>
+    <div class="mb-dropdown" id="mbd-cnc">
+      <div class="mb-mi" onclick="mbMacro()">Makro-Verwaltung&#8230;</div>
+      <div class="mb-mi" onclick="mbSyntax()">Syntax Highlight</div>
+    </div>
+  </div>
+
+  <!-- Ansicht -->
+  <div class="mb-item" id="mbi-view">
+    <button class="mb-btn" onclick="mbToggle('view')">Ansicht</button>
+    <div class="mb-dropdown" id="mbd-view">
+      <div class="mb-mi" onclick="toggleTheme()" id="mi-theme">Dunkles Theme</div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbMenuFontUp()">Men&#252;schrift gr&#246;&#223;er</div>
+      <div class="mb-mi" onclick="mbMenuFontDown()">Men&#252;schrift kleiner</div>
+      <div class="mb-mi" onclick="mbEditorFontUp()">Editorschrift gr&#246;&#223;er<span class="shortcut">Ctrl++</span></div>
+      <div class="mb-mi" onclick="mbEditorFontDown()">Editorschrift kleiner<span class="shortcut">Ctrl+-</span></div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbMinimap()" id="mi-minimap">&#10003; Minimap</div>
+      <div class="mb-mi" onclick="mbWordWrap()" id="mi-wordwrap">&#160;&#160;&#160;Zeilenumbruch</div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="toggleTravel()" id="mi-travel">&#160;&#160;&#160;Travel anzeigen</div>
+    </div>
+  </div>
+
+  <!-- Hilfe -->
+  <div class="mb-item" id="mbi-help">
+    <button class="mb-btn" onclick="mbToggle('help')">Hilfe</button>
+    <div class="mb-dropdown" id="mbd-help">
+      <div class="mb-mi" onclick="mbDocs()">Dokumentation&#8230;</div>
+      <div class="mb-sep"></div>
+      <div class="mb-mi" onclick="mbAbout()">&#220;ber printEdit&#8230;</div>
+    </div>
+  </div>
+
+  <div style="flex:1"></div>
+  <span id="hdr-filename" style="color:var(--text3);font-size:.75em;font-family:monospace;padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">Keine Datei</span>
+</div>
+
+<!-- ── Modals ──────────────────────────────────────────── -->
+<!-- Umbenennen -->
+<div class="modal-backdrop" id="modal-rename">
+  <div class="modal-box">
+    <h3>Umbenennen</h3>
+    <input class="modal-input" id="rename-inp" type="text" placeholder="Dateiname&#8230;">
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-rename')">Abbrechen</button>
+      <button class="primary" onclick="mbRenameConfirm()">Umbenennen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Speichern unter -->
+<div class="modal-backdrop" id="modal-saveas">
+  <div class="modal-box">
+    <h3>Speichern unter</h3>
+    <input class="modal-input" id="saveas-inp" type="text" placeholder="Dateiname.gcode">
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-saveas')">Abbrechen</button>
+      <button class="primary" onclick="mbSaveAsConfirm()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Code teilen -->
+<div class="modal-backdrop" id="modal-share">
+  <div class="modal-box" style="min-width:420px">
+    <h3>Code teilen</h3>
+    <p style="font-size:.78em;color:var(--text3);margin-bottom:8px">URL mit G-code (bis ~8 KB komprimiert):</p>
+    <textarea id="share-url" readonly onclick="this.select()"></textarea>
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-share')">Schlie&#223;en</button>
+      <button class="primary" onclick="mbShareCopy()">Kopieren</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transformation -->
+<div class="modal-backdrop" id="modal-transform">
+  <div class="modal-box" id="modal-transform">
+    <h3>Transformation</h3>
+    <div class="tf-grid">
+      <div><label>X verschieben (mm)</label><input class="modal-input" id="tf-dx" type="number" value="0" step="1"></div>
+      <div><label>Y verschieben (mm)</label><input class="modal-input" id="tf-dy" type="number" value="0" step="1"></div>
+      <div><label>Z verschieben (mm)</label><input class="modal-input" id="tf-dz" type="number" value="0" step="1"></div>
+      <div><label>X skalieren</label><input class="modal-input" id="tf-sx" type="number" value="1" step="0.01"></div>
+      <div><label>Y skalieren</label><input class="modal-input" id="tf-sy" type="number" value="1" step="0.01"></div>
+      <div><label>Z skalieren</label><input class="modal-input" id="tf-sz" type="number" value="1" step="0.01"></div>
+      <div><label>Um Z drehen (&#176;)</label><input class="modal-input" id="tf-rot" type="number" value="0" step="1"></div>
+    </div>
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-transform')">Abbrechen</button>
+      <button class="primary" onclick="mbTransformConfirm()">Anwenden</button>
+    </div>
+  </div>
+</div>
+
+<!-- Positionen spiegeln -->
+<div class="modal-backdrop" id="modal-mirror">
+  <div class="modal-box">
+    <h3>Positionen spiegeln</h3>
+    <p style="font-size:.78em;color:var(--text3);margin-bottom:10px">Spiegelebene w&#228;hlen:</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="opt-btn" onclick="mbMirrorApply('X')">X-Achse</button>
+      <button class="opt-btn" onclick="mbMirrorApply('Y')">Y-Achse</button>
+      <button class="opt-btn" onclick="mbMirrorApply('XY')">X+Y</button>
+    </div>
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-mirror')">Schlie&#223;en</button>
+    </div>
+  </div>
+</div>
+
+<!-- Makro-Verwaltung -->
+<div class="modal-backdrop" id="modal-macro">
+  <div class="modal-box" style="min-width:480px">
+    <h3>Makro-Verwaltung</h3>
+    <p style="font-size:.78em;color:var(--text3);margin-bottom:10px">
+      Makros werden als Kommentare im G-code gespeichert:<br>
+      <code style="font-size:.85em;color:var(--accent)">; MACRO:name = G-code</code>
+    </p>
+    <div id="macro-list" style="max-height:200px;overflow-y:auto;margin-bottom:10px;border:1px solid var(--border);border-radius:3px;padding:4px"></div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:10px">
+      <input class="modal-input" id="macro-name" placeholder="Name" style="margin:0">
+      <input class="modal-input" id="macro-code" placeholder="G-code" style="margin:0">
+    </div>
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-macro')">Schlie&#223;en</button>
+      <button class="primary" onclick="mbMacroAdd()">Hinzuf&#252;gen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Über -->
+<div class="modal-backdrop" id="modal-about">
+  <div class="modal-box" style="min-width:300px;text-align:center">
+    <div class="about-logo">printEdit</div>
+    <p>G-code Editor &amp; Simulator</p>
+    <p>Datentechnik Reitz</p>
+    <p style="margin-top:8px"><a href="https://cnc-technik.de" target="_blank" style="color:var(--accent)">cnc-technik.de</a></p>
+    <div class="modal-btns" style="justify-content:center;margin-top:16px">
+      <button class="primary" onclick="mbCloseModal('modal-about')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Beispielprogramme -->
+<div class="modal-backdrop" id="modal-examples">
+  <div class="modal-box" style="min-width:420px">
+    <h3>Beispielprogramme</h3>
+    <div id="example-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+    <div class="modal-btns">
+      <button onclick="mbCloseModal('modal-examples')">Abbrechen</button>
+    </div>
+  </div>
 </div>
 
 <div class="status">
@@ -1591,6 +1847,406 @@ THREE.OrbitControls = OrbitControls;
 'use strict';
 
 // ═══════════════════════════════════════════════════════════
+//  MENÜ-SYSTEM
+// ═══════════════════════════════════════════════════════════
+var MB_OPEN = null;
+var MENU_FONT_SIZE = 20; // body font-size px
+var MINIMAP_ON = true;
+var WORDWRAP_ON = false;
+
+function mbToggle(id) {
+  // Alle schließen
+  ['file','edit','cnc','view','help'].forEach(function(k) {
+    document.getElementById('mbd-'+k).classList.remove('show');
+    document.getElementById('mbi-'+k).querySelector('.mb-btn').classList.remove('open');
+  });
+  if (MB_OPEN === id) { MB_OPEN = null; return; }
+  MB_OPEN = id;
+  var btn = document.getElementById('mbi-'+id).querySelector('.mb-btn');
+  var drop = document.getElementById('mbd-'+id);
+  btn.classList.add('open');
+  // Position berechnen
+  var rect = btn.getBoundingClientRect();
+  drop.style.left = rect.left + 'px';
+  drop.style.top  = rect.bottom + 'px';
+  drop.classList.add('show');
+}
+
+function mbClose() {
+  ['file','edit','cnc','view','help'].forEach(function(k) {
+    var d = document.getElementById('mbd-'+k);
+    if (d) d.classList.remove('show');
+    var b = document.getElementById('mbi-'+k);
+    if (b) b.querySelector('.mb-btn').classList.remove('open');
+  });
+  MB_OPEN = null;
+}
+
+// Klick außerhalb schließt Menü
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.mb-item')) mbClose();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { mbClose(); mbCloseAllModals(); }
+  // Shortcuts
+  if (e.ctrlKey) {
+    if (e.key === 'n' || e.key === 'N') { e.preventDefault(); mbNew(); }
+    if (e.key === 's' && !e.shiftKey)   { e.preventDefault(); saveFile(); }
+    if (e.key === 'S' &&  e.shiftKey)   { e.preventDefault(); mbSaveAs(); }
+    if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); if(!e.shiftKey) mbUndo(); else mbRedo(); }
+    if (e.key === 'y' || e.key === 'Y') { e.preventDefault(); mbRedo(); }
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); mbEditorFontUp(); }
+    if (e.key === '-')                  { e.preventDefault(); mbEditorFontDown(); }
+  }
+});
+
+// ── Modal-Helpers ────────────────────────────────────────
+function mbOpenModal(id)  { mbClose(); document.getElementById(id).classList.add('show'); }
+function mbCloseModal(id) { document.getElementById(id).classList.remove('show'); }
+function mbCloseAllModals() {
+  document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.classList.remove('show'); });
+}
+
+// ── Datei ────────────────────────────────────────────────
+var EXAMPLES = [
+  { name: 'Würfel 20mm', code: [
+    '; Würfel 20x20x20mm – Cura Format','M104 S200','M140 S60','M109 S200','M190 S60','G28','G92 E0','',
+    '; Layer 1 Z=0.2','G0 F3600 X0 Y0 Z0.2',';TYPE:WALL-OUTER',
+    'G1 F1500 X20 Y0 E1.2','G1 X20 Y20 E2.4','G1 X0 Y20 E3.6','G1 X0 Y0 E4.8',
+    ';TYPE:FILL','G1 F2000 X2 Y2 E5.0','G1 X18 Y2 E5.9','G1 X2 Y4 E6.9','G1 X18 Y4 E7.8',
+    'G1 X2 Y6 E8.8','G1 X18 Y6 E9.7','G1 X2 Y8 E10.7','G1 X18 Y8 E11.6',
+    'G1 X2 Y10 E12.6','G1 X18 Y10 E13.5','G1 X2 Y12 E14.5','G1 X18 Y12 E15.4',
+    'G1 X2 Y14 E16.4','G1 X18 Y14 E17.3','G1 X2 Y16 E18.3','G1 X18 Y16 E19.2',
+    'G1 X2 Y18 E20.2','G1 X18 Y18 E21.1','',
+    '; Layer 2 Z=0.4','G0 F3600 X0 Y0 Z0.4',';TYPE:WALL-OUTER',
+    'G1 F1500 X20 Y0 E22.3','G1 X20 Y20 E23.5','G1 X0 Y20 E24.7','G1 X0 Y0 E25.9',
+    ';TYPE:WALL-INNER','G1 F1400 X1 Y1 E26.1','G1 X19 Y1 E26.9','G1 X19 Y19 E27.7','G1 X1 Y19 E28.5','G1 X1 Y1 E29.3','',
+    '; Layer 3 Z=0.6','G0 F3600 X0 Y0 Z0.6',';TYPE:WALL-OUTER',
+    'G1 F1500 X20 Y0 E30.5','G1 X20 Y20 E31.7','G1 X0 Y20 E32.9','G1 X0 Y0 E34.1',
+    'M104 S0','M140 S0','G28 X0 Y0','M84'
+  ].join('
+')},
+  { name: 'Zylinder ⌀30mm', code: [
+    '; Zylinder D30 H10mm','M104 S200','M140 S60','M109 S200','G28','G92 E0','',
+    '; Layer 1 Z=0.2','G0 F3600 X50 Y35 Z0.2',';TYPE:WALL-OUTER',
+    'G2 F1500 X50 Y35 I-15 J0 E5.0',
+    ';TYPE:FILL',
+    'G1 F2000 X50 Y20 E5.5',
+    'G1 X35 Y27.5 E6.5','G1 X65 Y27.5 E8.0',
+    'G1 X35 Y32.5 E9.5','G1 X65 Y32.5 E11.0',
+    'G1 X35 Y37.5 E12.5','G1 X65 Y37.5 E14.0',
+    'G1 X35 Y42.5 E15.5','G1 X65 Y42.5 E17.0','',
+    '; Layer 2 Z=0.4','G0 F3600 X50 Y35 Z0.4',';TYPE:WALL-OUTER',
+    'G2 F1500 X50 Y35 I-15 J0 E22.0',
+    ';TYPE:WALL-INNER',
+    'G0 X50 Y37 ','G2 F1400 X50 Y37 I-12 J0 E26.5','',
+    '; Layer 3 Z=0.6','G0 F3600 X50 Y35 Z0.6',';TYPE:WALL-OUTER',
+    'G2 F1500 X50 Y35 I-15 J0 E32.0',
+    'M104 S0','M140 S0','G28 X0 Y0','M84'
+  ].join('
+')},
+  { name: 'Vase (Spiralmodus)', code: [
+    '; Vase 40x40mm Spiralmodus','M104 S210','M140 S60','M109 S210','G28','G92 E0','',
+    '; Spiralmodus – kontinuierliche Z-Erhöhung',
+    'G0 F3600 X10 Y10 Z0.2',
+    'G1 F1200 X50 Y10 Z0.2 E2.0','G1 X50 Y50 Z0.3 E5.0','G1 X10 Y50 Z0.4 E8.0','G1 X10 Y10 Z0.5 E11.0',
+    'G1 X50 Y10 Z0.6 E13.0','G1 X50 Y50 Z0.7 E16.0','G1 X10 Y50 Z0.8 E19.0','G1 X10 Y10 Z0.9 E22.0',
+    'G1 X50 Y10 Z1.0 E24.0','G1 X50 Y50 Z1.1 E27.0','G1 X10 Y50 Z1.2 E30.0','G1 X10 Y10 Z1.3 E33.0',
+    'G1 X50 Y10 Z1.4 E35.0','G1 X50 Y50 Z1.5 E38.0','G1 X10 Y50 Z1.6 E41.0','G1 X10 Y10 Z1.7 E44.0',
+    'G1 X50 Y10 Z1.8 E46.0','G1 X50 Y50 Z1.9 E49.0','G1 X10 Y50 Z2.0 E52.0','G1 X10 Y10 Z2.1 E55.0',
+    'M104 S0','G28 X0 Y0','M84'
+  ].join('
+')},
+  { name: 'Kalibrierquadrat', code: [
+    '; Kalibrierquadrat 100x100mm','M104 S200','M140 S60','M109 S200','G28','G92 E0','',
+    '; Layer 1','G0 F3600 X0 Y0 Z0.2',';TYPE:WALL-OUTER',
+    'G1 F1500 X100 Y0 E5.0','G1 X100 Y100 E10.0','G1 X0 Y100 E15.0','G1 X0 Y0 E20.0',
+    ';TYPE:WALL-INNER',
+    'G1 F1400 X2 Y2 E20.2','G1 X98 Y2 E24.8','G1 X98 Y98 E29.4','G1 X2 Y98 E34.0','G1 X2 Y2 E38.6','',
+    '; Layer 2','G0 F3600 X0 Y0 Z0.4',';TYPE:WALL-OUTER',
+    'G1 F1500 X100 Y0 E43.6','G1 X100 Y100 E48.6','G1 X0 Y100 E53.6','G1 X0 Y0 E58.6',
+    ';TYPE:SKIN',
+    'G1 F1800 X2 Y2 E58.8',
+    'G1 X98 Y2 E62.6','G1 X2 Y6 E66.5','G1 X98 Y6 E70.3',
+    'G1 X2 Y10 E74.2','G1 X98 Y10 E78.0',
+    'G1 X2 Y94 E118.0','G1 X98 Y94 E121.8',
+    'G1 X2 Y98 E125.7','G1 X98 Y98 E129.5','',
+    'M104 S0','M140 S0','G28 X0 Y0','M84'
+  ].join('
+')},
+  { name: 'Brückentest', code: [
+    '; Brückentest 60x20mm','M104 S200','M140 S55','M109 S200','G28','G92 E0','',
+    '; Sockel Layer 1 Z=0.2','G0 F3600 X0 Y0 Z0.2',';TYPE:WALL-OUTER',
+    'G1 F1500 X60 Y0 E3.0','G1 X60 Y20 E4.0','G1 X0 Y20 E7.0','G1 X0 Y0 E8.0',
+    ';TYPE:FILL','G1 F2000 X2 Y2 E8.2','G1 X58 Y2 E10.7','G1 X2 Y6 E13.5','G1 X58 Y6 E16.0',
+    'G1 X2 Y10 E18.8','G1 X58 Y10 E21.3','G1 X2 Y14 E24.1','G1 X58 Y14 E26.6',
+    'G1 X2 Y18 E29.4','G1 X58 Y18 E31.9','',
+    '; Pfeiler links Z=0.4','G0 F3600 X0 Y0 Z0.4',';TYPE:WALL-OUTER',
+    'G1 F1500 X8 Y0 E32.3','G1 X8 Y20 E33.3','G1 X0 Y20 E33.7','G1 X0 Y0 E34.7','',
+    '; Pfeiler rechts Z=0.4','G0 F3600 X52 Y0 Z0.4',';TYPE:WALL-OUTER',
+    'G1 F1500 X60 Y0 E35.1','G1 X60 Y20 E36.1','G1 X52 Y20 E36.5','G1 X52 Y0 E37.5','',
+    '; Brücke Z=0.6',';TYPE:BRIDGE',
+    'G0 F3600 X8 Y2 Z0.6',
+    'G1 F800 X52 Y2 E40.5','G1 X8 Y4 E42.5','G1 X52 Y4 E45.5',
+    'G1 X8 Y8 E48.5','G1 X52 Y8 E51.5',
+    'G1 X8 Y12 E54.5','G1 X52 Y12 E57.5',
+    'G1 X8 Y16 E60.5','G1 X52 Y16 E63.5',
+    'G1 X8 Y18 E65.5','G1 X52 Y18 E68.5','',
+    'M104 S0','M140 S0','G28 X0 Y0','M84'
+  ].join('
+')},
+];
+
+function mbExamples() {
+  mbClose();
+  var list = document.getElementById('example-list');
+  list.innerHTML = '';
+  EXAMPLES.forEach(function(ex, i) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.style.cssText = 'width:100%;text-align:left;padding:8px 10px';
+    btn.textContent = ex.name;
+    btn.onclick = function() {
+      applyFile(ex.code, ex.name + '.gcode');
+      mbCloseModal('modal-examples');
+    };
+    list.appendChild(btn);
+  });
+  mbOpenModal('modal-examples');
+}
+
+function mbNew() {
+  mbClose();
+  if (window.ED) { ED.setValue(''); document.getElementById('hdr-filename').textContent = 'Neue Datei'; }
+}
+
+function mbSaveAs() {
+  mbClose();
+  var fn = document.getElementById('hdr-filename').textContent;
+  document.getElementById('saveas-inp').value = fn === 'Keine Datei' ? 'output.gcode' : fn;
+  mbOpenModal('modal-saveas');
+}
+function mbSaveAsConfirm() {
+  var name = document.getElementById('saveas-inp').value.trim() || 'output.gcode';
+  if (!name.match(/\.gcode$/i)) name += '.gcode';
+  document.getElementById('hdr-filename').textContent = name;
+  mbCloseModal('modal-saveas');
+  saveFile();
+}
+
+function mbRename() {
+  mbClose();
+  var fn = document.getElementById('hdr-filename').textContent;
+  document.getElementById('rename-inp').value = fn === 'Keine Datei' ? '' : fn;
+  mbOpenModal('modal-rename');
+  setTimeout(function(){ document.getElementById('rename-inp').focus(); }, 50);
+}
+function mbRenameConfirm() {
+  var name = document.getElementById('rename-inp').value.trim();
+  if (!name) return;
+  if (!name.match(/\.gcode$/i)) name += '.gcode';
+  document.getElementById('hdr-filename').textContent = name;
+  mbCloseModal('modal-rename');
+  flash('Umbenannt: ' + name);
+}
+
+function mbShare() {
+  mbClose();
+  if (!window.ED) return;
+  var code = ED.getValue();
+  // LZString-Komprimierung falls verfügbar, sonst Base64
+  var compressed;
+  try {
+    compressed = btoa(unescape(encodeURIComponent(code)));
+  } catch(e) { compressed = btoa(code); }
+  var url = location.origin + location.pathname + '?code=' + compressed.slice(0, 6000);
+  document.getElementById('share-url').value = url;
+  mbOpenModal('modal-share');
+}
+function mbShareCopy() {
+  document.getElementById('share-url').select();
+  document.execCommand('copy');
+  flash('URL kopiert');
+  mbCloseModal('modal-share');
+}
+
+// ── Bearbeiten ──────────────────────────────────────────
+function mbUndo()    { mbClose(); if (window.ED) ED.trigger('keyboard', 'undo', null); }
+function mbRedo()    { mbClose(); if (window.ED) ED.trigger('keyboard', 'redo', null); }
+function mbFind()    { mbClose(); if (window.ED) ED.getAction('actions.find').run(); }
+function mbReplace() { mbClose(); if (window.ED) ED.getAction('editor.action.startFindReplaceAction').run(); }
+function mbComment() {
+  mbClose();
+  if (!window.ED) return;
+  var model = ED.getModel();
+  var sel   = ED.getSelection();
+  var startLine = sel.startLineNumber, endLine = sel.endLineNumber;
+  var edits = [];
+  for (var l = startLine; l <= endLine; l++) {
+    var text = model.getLineContent(l);
+    if (text.trimStart().startsWith(';')) {
+      edits.push({ range: new monaco.Range(l,1,l,text.indexOf(';')+2), text: '' });
+    } else {
+      edits.push({ range: new monaco.Range(l,1,l,1), text: '; ' });
+    }
+  }
+  ED.executeEdits('comment', edits);
+}
+
+function mbMirror() { mbClose(); mbOpenModal('modal-mirror'); }
+function mbMirrorApply(axis) {
+  if (!window.ED) return;
+  var lines = ED.getValue().split('
+');
+  // Bounding Box ermitteln
+  var xs=[], ys=[];
+  lines.forEach(function(l) {
+    var mx=l.match(/X(-?[\d.]+)/i), my=l.match(/Y(-?[\d.]+)/i);
+    if (mx) xs.push(parseFloat(mx[1]));
+    if (my) ys.push(parseFloat(my[1]));
+  });
+  var cx = xs.length ? (Math.min.apply(null,xs)+Math.max.apply(null,xs))/2 : 0;
+  var cy = ys.length ? (Math.min.apply(null,ys)+Math.max.apply(null,ys))/2 : 0;
+  var out = lines.map(function(l) {
+    if (!/^G[01]/i.test(l.trim())) return l;
+    if (axis==='X'||axis==='XY') l = l.replace(/X(-?[\d.]+)/gi, function(m,v){ return 'X'+(2*cx-parseFloat(v)).toFixed(3); });
+    if (axis==='Y'||axis==='XY') l = l.replace(/Y(-?[\d.]+)/gi, function(m,v){ return 'Y'+(2*cy-parseFloat(v)).toFixed(3); });
+    return l;
+  });
+  ED.setValue(out.join('
+'));
+  flash('Gespiegelt an ' + axis);
+}
+
+function mbTransform() { mbClose(); mbOpenModal('modal-transform'); }
+function mbTransformConfirm() {
+  if (!window.ED) return;
+  var dx  = parseFloat(document.getElementById('tf-dx').value)||0;
+  var dy  = parseFloat(document.getElementById('tf-dy').value)||0;
+  var dz  = parseFloat(document.getElementById('tf-dz').value)||0;
+  var sx  = parseFloat(document.getElementById('tf-sx').value)||1;
+  var sy  = parseFloat(document.getElementById('tf-sy').value)||1;
+  var sz  = parseFloat(document.getElementById('tf-sz').value)||1;
+  var rot = (parseFloat(document.getElementById('tf-rot').value)||0) * Math.PI/180;
+  var cosR=Math.cos(rot), sinR=Math.sin(rot);
+  var lines = ED.getValue().split('
+');
+  var out = lines.map(function(l) {
+    if (!/^G[01]/i.test(l.trim())) return l;
+    l = l.replace(/X(-?[\d.]+)/gi, function(m,v){ return 'X'+(parseFloat(v)*sx+dx).toFixed(3); });
+    l = l.replace(/Y(-?[\d.]+)/gi, function(m,v){ return 'Y'+(parseFloat(v)*sy+dy).toFixed(3); });
+    l = l.replace(/Z(-?[\d.]+)/gi, function(m,v){ return 'Z'+(parseFloat(v)*sz+dz).toFixed(3); });
+    if (rot !== 0) {
+      var xm = l.match(/X(-?[\d.]+)/i), ym = l.match(/Y(-?[\d.]+)/i);
+      if (xm && ym) {
+        var xv=parseFloat(xm[1]), yv=parseFloat(ym[1]);
+        var xr=(xv*cosR - yv*sinR).toFixed(3), yr=(xv*sinR + yv*cosR).toFixed(3);
+        l = l.replace(/X(-?[\d.]+)/i, 'X'+xr).replace(/Y(-?[\d.]+)/i, 'Y'+yr);
+      }
+    }
+    return l;
+  });
+  ED.setValue(out.join('
+'));
+  mbCloseModal('modal-transform');
+  flash('Transformation angewendet');
+}
+
+// ── CNC Code ────────────────────────────────────────────
+function mbMacro() {
+  mbClose();
+  mbRefreshMacroList();
+  mbOpenModal('modal-macro');
+}
+function mbRefreshMacroList() {
+  var list = document.getElementById('macro-list');
+  var macros = mbGetMacros();
+  if (!macros.length) { list.innerHTML = '<div style="padding:6px;font-size:.75em;color:var(--text3)">Keine Makros definiert</div>'; return; }
+  list.innerHTML = '';
+  macros.forEach(function(m) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:.78em;border-bottom:1px solid var(--border)';
+    row.innerHTML = '<span style="color:var(--accent);font-family:monospace;min-width:80px">'+m.name+'</span>'
+      +'<span style="color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis">'+m.code+'</span>'
+      +'<button class="s-btn" onclick="mbMacroInsert(''+m.name+'')">Einf.</button>'
+      +'<button class="s-btn" onclick="mbMacroDelete(''+m.name+'')">&#10005;</button>';
+    list.appendChild(row);
+  });
+}
+function mbGetMacros() {
+  try { return JSON.parse(localStorage.getItem('pe_macros')||'[]'); } catch(e) { return []; }
+}
+function mbMacroAdd() {
+  var name = document.getElementById('macro-name').value.trim();
+  var code = document.getElementById('macro-code').value.trim();
+  if (!name||!code) return;
+  var macros = mbGetMacros();
+  macros = macros.filter(function(m){ return m.name!==name; });
+  macros.push({name:name,code:code});
+  localStorage.setItem('pe_macros', JSON.stringify(macros));
+  document.getElementById('macro-name').value='';
+  document.getElementById('macro-code').value='';
+  mbRefreshMacroList();
+}
+function mbMacroDelete(name) {
+  var macros = mbGetMacros().filter(function(m){ return m.name!==name; });
+  localStorage.setItem('pe_macros', JSON.stringify(macros));
+  mbRefreshMacroList();
+}
+function mbMacroInsert(name) {
+  var macros = mbGetMacros();
+  var m = macros.find(function(m){ return m.name===name; });
+  if (!m||!window.ED) return;
+  var pos = ED.getPosition();
+  ED.executeEdits('macro', [{range: new monaco.Range(pos.lineNumber,1,pos.lineNumber,1), text:'; MACRO:'+m.name+' = '+m.code+'
+'+m.code+'
+'}]);
+  mbCloseModal('modal-macro');
+}
+function mbSyntax() {
+  mbClose();
+  flash('Syntax Highlight: G/M=blau, Koordinaten=grün, Kommentare=kursiv');
+}
+
+// ── Ansicht ─────────────────────────────────────────────
+var MINIMAP_ENABLED = true;
+var WORDWRAP_ENABLED = false;
+
+function mbMenuFontUp()   { mbClose(); MENU_FONT_SIZE = Math.min(28, MENU_FONT_SIZE+1); document.body.style.fontSize = MENU_FONT_SIZE+'px'; }
+function mbMenuFontDown() { mbClose(); MENU_FONT_SIZE = Math.max(12, MENU_FONT_SIZE-1); document.body.style.fontSize = MENU_FONT_SIZE+'px'; }
+function mbEditorFontUp() {
+  mbClose();
+  if (!window.ED) return;
+  var sz = ED.getOption(monaco.editor.EditorOption.fontSize);
+  ED.updateOptions({ fontSize: Math.min(32, sz+1) });
+}
+function mbEditorFontDown() {
+  mbClose();
+  if (!window.ED) return;
+  var sz = ED.getOption(monaco.editor.EditorOption.fontSize);
+  ED.updateOptions({ fontSize: Math.max(8, sz-1) });
+}
+function mbMinimap() {
+  mbClose();
+  MINIMAP_ENABLED = !MINIMAP_ENABLED;
+  if (window.ED) ED.updateOptions({ minimap: { enabled: MINIMAP_ENABLED } });
+  document.getElementById('mi-minimap').textContent = (MINIMAP_ENABLED ? '✓' : '   ') + ' Minimap';
+}
+function mbWordWrap() {
+  mbClose();
+  WORDWRAP_ENABLED = !WORDWRAP_ENABLED;
+  if (window.ED) ED.updateOptions({ wordWrap: WORDWRAP_ENABLED ? 'on' : 'off' });
+  document.getElementById('mi-wordwrap').textContent = (WORDWRAP_ENABLED ? '✓' : '   ') + ' Zeilenumbruch';
+}
+
+// ── Hilfe ────────────────────────────────────────────────
+function mbDocs() {
+  mbClose();
+  window.open('https://cnc-technik.de', '_blank');
+}
+function mbAbout() { mbClose(); mbOpenModal('modal-about'); }
+
+// ═══════════════════════════════════════════════════════════
 //  THEME
 // ═══════════════════════════════════════════════════════════
 var THEME = localStorage.getItem('pe_theme') || 'krl-dark';
@@ -1599,8 +2255,8 @@ function applyTheme(t) {
   THEME = t;
   document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('pe_theme', t);
-  var btn = document.getElementById('btn-theme');
-  btn.textContent = t === 'krl-dark' ? '\u2600 Hell' : '\uD83C\uDF19 Dunkel';
+  var mi=document.getElementById('mi-theme');
+  if(mi) mi.textContent = t==='krl-dark' ? 'Helles Theme' : 'Dunkles Theme';
   if (window.ED) monaco.editor.setTheme(t === 'krl-dark' ? 'pe-dark' : 'pe-light');
   if (SIM.renderer) {
     var bg = t === 'krl-dark' ? 0x141414 : 0xE8E8E8;
@@ -2335,9 +2991,8 @@ function toggleCumul() {
 }
 function toggleTravel() {
   SHOW_TRAVEL = !SHOW_TRAVEL;
-  var b=document.getElementById('btn-travel');
-  b.textContent='Travel: '+(SHOW_TRAVEL?'ein':'aus');
-  b.classList.toggle('active',SHOW_TRAVEL);
+  var mi=document.getElementById('mi-travel');
+  if(mi) mi.textContent=(SHOW_TRAVEL?'✓':'   ')+' Travel anzeigen';
   if (PARSED) { buildSimGeometry(PARSED,CURLAYER,CUMULATIVE); updateLegend(); }
 }
 
@@ -2512,7 +3167,8 @@ require(['vs/editor/editor.main'], function () {
   ED.onDidChangeCursorPosition(function(e){
     document.getElementById('s-cur').textContent=e.position.lineNumber+':'+e.position.column;
   });
-  document.getElementById('btn-theme').textContent = THEME==='krl-dark'?'\u2600 Hell':'\uD83C\uDF19 Dunkel';
+  // Theme-Label im Menü setzen
+  var miTheme=document.getElementById('mi-theme'); if(miTheme) miTheme.textContent = THEME==='krl-dark'?'Helles Theme':'Dunkles Theme';
 
   // Three.js init: warten bis sim-wrap Dimensionen hat
   function trySimInit(attempts) {
