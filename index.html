@@ -89,7 +89,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 /* ── Menüleiste ─────────────────────────────────────────── */
 .menubar{
   height:30px;background:var(--bg3);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0;flex-shrink:0;user-select:none;position:relative;z-index:500;
+  display:flex;align-items:center;padding:0;flex-shrink:0;user-select:none;z-index:200;
 }
 .menubar-logo{
   padding:0 14px;font-weight:700;font-size:.82em;color:#F0A030;
@@ -102,14 +102,14 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   padding:0 12px;height:100%;cursor:pointer;font-size:.82em;
   font-family:inherit;outline:none;white-space:nowrap;
 }
-.mb-btn:hover,.mb-btn.open{background:var(--bg-hover)}
+.mb-btn:hover,.mb-item[data-open] .mb-btn{background:var(--bg-hover)}
 .mb-dropdown{
-  display:none;position:fixed;min-width:240px;
+  display:none;position:absolute;left:0;top:100%;min-width:240px;
   background:var(--bg2);border:1px solid var(--border);
-  border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.45);
-  z-index:1000;padding:4px 0;
+  border-radius:0 4px 4px 4px;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  z-index:9999;padding:4px 0;
 }
-.mb-dropdown.show{display:block}
+.mb-item[data-open] .mb-dropdown{display:block}
 .mb-mi{
   display:flex;align-items:center;justify-content:space-between;
   padding:5px 16px 5px 12px;cursor:pointer;font-size:.8em;
@@ -1937,31 +1937,18 @@ var MINIMAP_ON = true;
 var WORDWRAP_ON = false;
 
 function mbToggle(id, event) {
-  if (event) event.stopPropagation();
+  if (event) { event.stopPropagation(); event.preventDefault(); }
   var wasOpen = MB_OPEN === id;
-  // Alle schließen
-  ['file','edit','cnc','view','help'].forEach(function(k) {
-    document.getElementById('mbd-'+k).classList.remove('show');
-    document.getElementById('mbi-'+k).querySelector('.mb-btn').classList.remove('open');
-  });
-  MB_OPEN = null;
+  mbClose();
   if (wasOpen) return;
   MB_OPEN = id;
-  var btn = document.getElementById('mbi-'+id).querySelector('.mb-btn');
-  var drop = document.getElementById('mbd-'+id);
-  btn.classList.add('open');
-  var rect = btn.getBoundingClientRect();
-  drop.style.left = rect.left + 'px';
-  drop.style.top  = rect.bottom + 'px';
-  drop.classList.add('show');
+  document.getElementById('mbi-'+id).setAttribute('data-open','1');
 }
 
 function mbClose() {
   ['file','edit','cnc','view','help'].forEach(function(k) {
-    var d = document.getElementById('mbd-'+k);
-    if (d) d.classList.remove('show');
-    var b = document.getElementById('mbi-'+k);
-    if (b) b.querySelector('.mb-btn').classList.remove('open');
+    var el = document.getElementById('mbi-'+k);
+    if (el) el.removeAttribute('data-open');
   });
   MB_OPEN = null;
 }
