@@ -72,6 +72,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .sim-overlay{position:absolute;top:6px;right:8px;font-family:monospace;font-size:.7em;color:var(--text3);pointer-events:none;line-height:1.8;text-align:right}
 .sim-loading{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:var(--accent);font-family:monospace;font-size:.82em;z-index:10}
 .sim-loading.on{display:flex}
+.printer-panel{border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;padding:6px 7px;display:flex;align-items:center;gap:6px;font-family:monospace;font-size:.72em;color:var(--text3)}
+.printer-panel input[type=number]{width:52px;background:var(--bg-input);border:1px solid var(--border);color:var(--text1);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:1em;text-align:right}
 .opt-panel{border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;padding:7px}
 .opt-title{color:var(--text3);font-size:.68em;font-family:monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
@@ -161,6 +163,13 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <div id="sim-legend"></div>
       <div class="sim-overlay" id="sim-overlay"></div>
       <div class="sim-loading" id="sim-loading">Simuliere&#8230;</div>
+    </div>
+    <div class="printer-panel">
+      <span>Drucker:</span>
+      <span>B</span><input type="number" id="bed-x" value="220" min="10" max="2000" step="10" onchange="applyBedSize()">
+      <span>T</span><input type="number" id="bed-y" value="220" min="10" max="2000" step="10" onchange="applyBedSize()">
+      <span>H</span><input type="number" id="bed-z" value="250" min="10" max="2000" step="10" onchange="applyBedSize()">
+      <span>mm</span>
     </div>
     <div class="opt-panel">
       <div class="opt-title">Optimierungen</div>
@@ -1818,6 +1827,8 @@ function parseGcode(text) {
 // ═══════════════════════════════════════════════════════════
 //  THREE.JS SIMULATOR
 // ═══════════════════════════════════════════════════════════
+var BED = { x: 220, y: 220, z: 250 };
+
 var SIM = {
   renderer: null, scene: null, camera: null, controls: null,
   meshGroup: null, animFrame: null, dirty: false
@@ -1845,21 +1856,28 @@ function simInit() {
 
   // Kamera
   SIM.camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 5000);
-  SIM.camera.position.set(0, -200, 200);
+  var dist = Math.max(BED.x, BED.y, BED.z) * 1.5;
+  SIM.camera.position.set(BED.x/2, -dist*0.6, dist*0.7);
   SIM.camera.up.set(0, 0, 1);
 
   // OrbitControls
   SIM.controls = new THREE.OrbitControls(SIM.camera, canvas);
   SIM.controls.enableDamping = true;
   SIM.controls.dampingFactor = 0.1;
-  SIM.controls.target.set(110, 110, 0);
+  SIM.controls.target.set(BED.x/2, BED.y/2, 0);
   SIM.controls.update();
 
   // Druckbett – dünnes Gitter
-  var gridHelper = new THREE.GridHelper(220, 22, 0x333333, 0x282828);
+  var gridHelper = new THREE.GridHelper(BED.x, Math.round(BED.x/10), 0x333333, 0x282828);
   gridHelper.rotation.x = Math.PI / 2;
-  gridHelper.position.set(110, 110, 0);
+  gridHelper.position.set(BED.x/2, BED.y/2, 0);
   SIM.scene.add(gridHelper);
+  // Bettrahmen
+  var bedGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(BED.x, BED.y, BED.z));
+  var bedMat = new THREE.LineBasicMaterial({ color: 0x444444 });
+  var bedBox = new THREE.LineSegments(bedGeo, bedMat);
+  bedBox.position.set(BED.x/2, BED.y/2, BED.z/2);
+  SIM.scene.add(bedBox);
 
   // Render-Loop
   if (SIM.animFrame) cancelAnimationFrame(SIM.animFrame);
@@ -1991,10 +2009,15 @@ function buildSimGeometry(parsed, upToLayer, cumulative, upToSeg) {
 
   // Licht
   SIM.scene.clear();
-  var gridHelper = new THREE.GridHelper(220, 22, 0x333333, 0x282828);
+  var gridHelper = new THREE.GridHelper(BED.x, Math.round(BED.x/10), 0x333333, 0x282828);
   gridHelper.rotation.x = Math.PI / 2;
-  gridHelper.position.set(110, 110, 0);
+  gridHelper.position.set(BED.x/2, BED.y/2, 0);
   SIM.scene.add(gridHelper);
+  var bedGeo2 = new THREE.EdgesGeometry(new THREE.BoxGeometry(BED.x, BED.y, BED.z));
+  var bedMat2 = new THREE.LineBasicMaterial({ color: 0x444444 });
+  var bedBox2 = new THREE.LineSegments(bedGeo2, bedMat2);
+  bedBox2.position.set(BED.x/2, BED.y/2, BED.z/2);
+  SIM.scene.add(bedBox2);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
   dirLight.position.set(100, -100, 200);
@@ -2327,6 +2350,34 @@ function applyExtWidth() {
     else buildSimGeometry(PARSED,CURLAYER,CUMULATIVE);
   }
 }
+
+function applyBedSize() {
+  var x = parseFloat(document.getElementById('bed-x').value);
+  var y = parseFloat(document.getElementById('bed-y').value);
+  var z = parseFloat(document.getElementById('bed-z').value);
+  if (isNaN(x)||isNaN(y)||isNaN(z)||x<10||y<10||z<10) return;
+  BED.x = x; BED.y = y; BED.z = z;
+  // Kamera-Position und Target neu setzen
+  var dist = Math.max(x,y,z) * 1.5;
+  SIM.camera.position.set(x/2, -dist*0.6, dist*0.7);
+  SIM.controls.target.set(x/2, y/2, 0);
+  SIM.controls.update();
+  if (PARSED) {
+    if (STEPMODE==='seg') buildSimGeometry(PARSED,CURLAYER,CUMULATIVE,CURSEG);
+    else buildSimGeometry(PARSED,CURLAYER,CUMULATIVE);
+  } else {
+    // Nur Grid + Bettrahmen neu zeichnen
+    SIM.scene.clear();
+    var g = new THREE.GridHelper(BED.x, Math.round(BED.x/10), 0x333333, 0x282828);
+    g.rotation.x = Math.PI/2; g.position.set(BED.x/2,BED.y/2,0); SIM.scene.add(g);
+    var bGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(BED.x,BED.y,BED.z));
+    var bMat = new THREE.LineBasicMaterial({color:0x444444});
+    var bBox = new THREE.LineSegments(bGeo,bMat);
+    bBox.position.set(BED.x/2,BED.y/2,BED.z/2); SIM.scene.add(bBox);
+    var dl = new THREE.DirectionalLight(0xffffff,0.8); dl.position.set(100,-100,200); SIM.scene.add(dl);
+    SIM.scene.add(new THREE.AmbientLight(0xffffff,0.4));
+  }
+}
 function setColorMode(m) {
   COLOR_MODE = m;
   ['type','speed','layer','overhang'].forEach(function(id){
@@ -2565,6 +2616,7 @@ var SAMPLE_GCODE=[
 </script>
 </body>
 </html>
+
 
 
 
