@@ -119,14 +119,16 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <button class="s-btn play" id="btn-play" onclick="playAnim()" title="Abspielen">&#9654;</button>
       <button class="s-btn" id="btn-stop" onclick="stopAnim()" title="Stop">&#9632;</button>
       <div style="width:1px;height:16px;background:var(--border);margin:0 3px;flex-shrink:0"></div>
-      <span class="sim-lbl">LAYER</span>
-      <button class="s-btn" onclick="layerFirst()">|&#9668;</button>
-      <button class="s-btn" onclick="layerStep(-10)">&#171;</button>
-      <button class="s-btn" onclick="layerStep(-1)">&#8249;</button>
+      <button class="cm-btn active" id="btn-mode-layer" onclick="setStepMode('layer')" title="Layer-für-Layer">Layer</button>
+      <button class="cm-btn"        id="btn-mode-seg"   onclick="setStepMode('seg')"   title="Satz für Satz">Satz</button>
+      <div style="width:1px;height:16px;background:var(--border);margin:0 3px;flex-shrink:0"></div>
+      <button class="s-btn" onclick="stepFirst()">|&#9668;</button>
+      <button class="s-btn" onclick="stepBack10()">&#171;</button>
+      <button class="s-btn" onclick="stepBack1()">&#8249;</button>
       <span class="layer-disp" id="layer-disp">&#8211; / &#8211;</span>
-      <button class="s-btn" onclick="layerStep(1)">&#8250;</button>
-      <button class="s-btn" onclick="layerStep(10)">&#187;</button>
-      <button class="s-btn" onclick="layerLast()">&#9658;|</button>
+      <button class="s-btn" onclick="stepFwd1()">&#8250;</button>
+      <button class="s-btn" onclick="stepFwd10()">&#187;</button>
+      <button class="s-btn" onclick="stepLast()">&#9658;|</button>
       <button class="s-btn active" id="btn-cumul" onclick="toggleCumul()">CUM</button>
       <div style="flex:1"></div>
       <span class="sim-lbl">Geschw.</span>
@@ -136,9 +138,15 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <span id="speed-val" style="color:var(--accent);font-family:monospace;font-size:.72em;min-width:24px;text-align:right;flex-shrink:0">50</span>
     </div>
     <div class="slider-row">
-      <span class="sim-lbl">Z</span>
-      <input type="range" id="layer-slider" min="1" max="100" value="100" oninput="sliderInput(this.value)">
+      <span class="sim-lbl" id="slider-lbl">Z</span>
+      <input type="range" id="step-slider" min="1" max="100" value="100" oninput="sliderInput(this.value)">
       <span class="layer-z" id="layer-z-val">&#8211;</span>
+      <div style="width:1px;height:14px;background:var(--border);margin:0 6px;flex-shrink:0"></div>
+      <span class="sim-lbl">Breite</span>
+      <input type="number" id="ext-width-inp" value="0.45" min="0.1" max="2.0" step="0.05"
+             onchange="applyExtWidth()"
+             style="width:52px;background:var(--bg-input);border:1px solid var(--border);color:var(--text1);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:.72em;text-align:right;flex-shrink:0">
+      <span class="sim-lbl">mm</span>
     </div>
     <!-- Color mode selector -->
     <div class="cmode-row">
@@ -1599,6 +1607,9 @@ document.documentElement.setAttribute('data-theme', THEME);
 // ═══════════════════════════════════════════════════════════
 var CURLAYER    = 0;
 var MAXLAYER    = 0;
+var CURSEG      = 0;   // aktueller Satz-Index (Satz-Modus)
+var MAXSEG      = 0;   // Gesamtanzahl Segmente
+var STEPMODE    = 'layer'; // 'layer' | 'seg'
 var CUMULATIVE  = true;
 var SHOW_TRAVEL = false;
 var PLAYING     = false;
@@ -1902,7 +1913,8 @@ function simRender() {
 // Breite = EXT_WIDTH, Höhe = EXT_HEIGHT, Länge = Segmentlänge
 // Als BufferGeometry für Performance (kein Mesh pro Segment)
 
-function buildSimGeometry(parsed, upToLayer, cumulative) {
+function buildSimGeometry(parsed, upToLayer, cumulative, upToSeg) {
+  // upToSeg: wenn gesetzt → Satz-Modus, nur Segmente 0..upToSeg-1 anzeigen
   if (!parsed || !parsed.segs.length) return;
 
   // Schichthöhe aus Daten berechnen
@@ -1911,7 +1923,7 @@ function buildSimGeometry(parsed, upToLayer, cumulative) {
     for (var i=1; i<Math.min(10,parsed.layers.length); i++)
       diffs.push(parsed.layers[i].z - parsed.layers[i-1].z);
     EXT_HEIGHT = diffs.reduce(function(a,b){return a+b;})/diffs.length;
-    EXT_WIDTH  = EXT_HEIGHT * 2.0; // typisch Breite = 2× Höhe
+    // EXT_WIDTH kommt vom Eingabefeld, nicht automatisch überschreiben
   }
 
   // Gruppen pro Typ/Farbe: Map color → {positions[], normals[], indices[]}
@@ -1932,8 +1944,13 @@ function buildSimGeometry(parsed, upToLayer, cumulative) {
   for (var si=0; si<segs.length; si++) {
     var s = segs[si];
     if (s.layer < 0) continue;
-    if (s.layer >= layerTo) continue;
-    if (s.layer < layerFrom) continue;
+    if (upToSeg !== undefined) {
+      // Satz-Modus: alle Segmente bis upToSeg (index)
+      if (si >= upToSeg) continue;
+    } else {
+      if (s.layer >= layerTo) continue;
+      if (s.layer < layerFrom) continue;
+    }
 
     var isTravel = s.type === 'travel';
     if (isTravel && !SHOW_TRAVEL) continue;
@@ -2116,10 +2133,10 @@ function runSim() {
       PARSED = parseGcode(text);
       MAXLAYER = PARSED.layers.length;
       CURLAYER = MAXLAYER;
+      MAXSEG   = PARSED.segs.length;
+      CURSEG   = MAXSEG;
 
-      var sl = document.getElementById('layer-slider');
-      sl.max = MAXLAYER || 1; sl.value = MAXLAYER;
-
+      updateSliderRange();
       buildSimGeometry(PARSED, CURLAYER, CUMULATIVE);
       updateLayerView();
       updateStats();
@@ -2137,11 +2154,21 @@ function updateLayerView() {
   var zStr  = layer ? layer.z.toFixed(3) + ' mm' : '\u2013';
   document.getElementById('layer-z-val').textContent = zStr;
   document.getElementById('sim-overlay').textContent = 'Layer ' + CURLAYER + ' / ' + MAXLAYER + '\nZ = ' + zStr;
-  buildSimGeometry(PARSED, CURLAYER, CUMULATIVE);
-  // Editor-Sync
-  if (window.ED && layer) {
-    ED.revealLineInCenter(layer.lineIdx + 1);
-    ED.setPosition({ lineNumber: layer.lineIdx + 1, column: 1 });
+  if (STEPMODE === 'seg') {
+    buildSimGeometry(PARSED, CURLAYER, CUMULATIVE, CURSEG);
+    // Editor-Sync: Segment-Zeilennummer
+    if (window.ED && PARSED.segs[CURSEG-1]) {
+      var li = PARSED.segs[CURSEG-1].lineIdx + 1;
+      ED.revealLineInCenter(li);
+      ED.setPosition({ lineNumber: li, column: 1 });
+    }
+  } else {
+    buildSimGeometry(PARSED, CURLAYER, CUMULATIVE);
+    // Editor-Sync
+    if (window.ED && layer) {
+      ED.revealLineInCenter(layer.lineIdx + 1);
+      ED.setPosition({ lineNumber: layer.lineIdx + 1, column: 1 });
+    }
   }
 }
 
@@ -2169,14 +2196,77 @@ function updateStats() {
 // ═══════════════════════════════════════════════════════════
 //  LAYER / PLAY CONTROLS
 // ═══════════════════════════════════════════════════════════
-function layerStep(d)   { stopAnim(); setLayerTo(CURLAYER + d); }
-function layerFirst()   { stopAnim(); setLayerTo(1); }
-function layerLast()    { stopAnim(); setLayerTo(MAXLAYER); }
-function sliderInput(v) { stopAnim(); setLayerTo(parseInt(v)); }
+// ── Schritt-Modus umschalten ──────────────────────────────
+function setStepMode(m) {
+  STEPMODE = m;
+  document.getElementById('btn-mode-layer').classList.toggle('active', m==='layer');
+  document.getElementById('btn-mode-seg').classList.toggle('active', m==='seg');
+  updateSliderRange();
+  updateLayerView();
+}
+
+function updateSliderRange() {
+  var sl = document.getElementById('step-slider');
+  var lbl = document.getElementById('slider-lbl');
+  if (STEPMODE === 'layer') {
+    sl.max = MAXLAYER || 1;
+    sl.value = CURLAYER;
+    lbl.textContent = 'Z';
+  } else {
+    sl.max = MAXSEG || 1;
+    sl.value = CURSEG;
+    lbl.textContent = 'Satz';
+  }
+}
+
+// ── Stepper-Buttons (Layer und Satz) ─────────────────────
+function stepFwd1()  { stopAnim(); if(STEPMODE==='layer') setLayerTo(CURLAYER+1);  else setSegTo(CURSEG+1); }
+function stepBack1() { stopAnim(); if(STEPMODE==='layer') setLayerTo(CURLAYER-1);  else setSegTo(CURSEG-1); }
+function stepFwd10() { stopAnim(); if(STEPMODE==='layer') setLayerTo(CURLAYER+10); else setSegTo(CURSEG+10); }
+function stepBack10(){ stopAnim(); if(STEPMODE==='layer') setLayerTo(CURLAYER-10); else setSegTo(CURSEG-10); }
+function stepFirst() { stopAnim(); if(STEPMODE==='layer') setLayerTo(1);           else setSegTo(1); }
+function stepLast()  { stopAnim(); if(STEPMODE==='layer') setLayerTo(MAXLAYER);    else setSegTo(MAXSEG); }
+
+function sliderInput(v) {
+  stopAnim();
+  if (STEPMODE === 'layer') setLayerTo(parseInt(v));
+  else setSegTo(parseInt(v));
+}
+
+function setSegTo(n) {
+  if (!PARSED || !MAXSEG) return;
+  CURSEG = Math.max(1, Math.min(MAXSEG, n));
+  // zugehöriges Layer bestimmen
+  var seg = PARSED.segs[CURSEG-1];
+  if (seg) CURLAYER = Math.max(1, seg.layer + 1);
+  document.getElementById('step-slider').value = CURSEG;
+  var dispMax = MAXSEG;
+  document.getElementById('layer-disp').textContent = CURSEG + ' / ' + dispMax;
+  var zStr = seg ? seg.z1.toFixed(3) + ' mm' : '–';
+  document.getElementById('layer-z-val').textContent = zStr;
+  document.getElementById('sim-overlay').textContent = 'Satz ' + CURSEG + ' / ' + MAXSEG + '\nZ = ' + zStr;
+  buildSimGeometry(PARSED, CURLAYER, CUMULATIVE, CURSEG);
+  // Editor-Sync
+  if (window.ED && seg) {
+    ED.revealLineInCenter(seg.lineIdx + 1);
+    ED.setPosition({ lineNumber: seg.lineIdx + 1, column: 1 });
+  }
+}
+
+// ── Layer-Stepper (Layer-Modus) ───────────────────────────
+function layerStep(d)   { setLayerTo(CURLAYER + d); }
+function layerFirst()   { setLayerTo(1); }
+function layerLast()    { setLayerTo(MAXLAYER); }
 
 function playAnim() {
-  if (PLAYING || !PARSED || !MAXLAYER) return;
-  if (CURLAYER >= MAXLAYER) { CURLAYER=0; document.getElementById('layer-slider').value=0; }
+  if (PLAYING || !PARSED) return;
+  if (STEPMODE === 'layer') {
+    if (!MAXLAYER) return;
+    if (CURLAYER >= MAXLAYER) { CURLAYER=0; document.getElementById('step-slider').value=0; }
+  } else {
+    if (!MAXSEG) return;
+    if (CURSEG >= MAXSEG) { CURSEG=0; document.getElementById('step-slider').value=0; }
+  }
   PLAYING=true;
   document.getElementById('btn-play').classList.add('running');
   playStep();
@@ -2190,10 +2280,25 @@ function stopAnim() {
 }
 function playStep() {
   if (!PLAYING) return;
-  if (CURLAYER >= MAXLAYER) { stopAnim(); return; }
-  CURLAYER++;
-  document.getElementById('layer-slider').value = CURLAYER;
-  updateLayerView();
+  if (STEPMODE === 'layer') {
+    if (CURLAYER >= MAXLAYER) { stopAnim(); return; }
+    CURLAYER++;
+    document.getElementById('step-slider').value = CURLAYER;
+    updateLayerView();
+  } else {
+    if (CURSEG >= MAXSEG) { stopAnim(); return; }
+    CURSEG++;
+    // Layer mitführen
+    var seg = PARSED.segs[CURSEG-1];
+    if (seg) CURLAYER = Math.max(1, seg.layer + 1);
+    document.getElementById('step-slider').value = CURSEG;
+    document.getElementById('layer-disp').textContent = CURSEG + ' / ' + MAXSEG;
+    var zStr = seg ? seg.z1.toFixed(3) + ' mm' : '–';
+    document.getElementById('layer-z-val').textContent = zStr;
+    document.getElementById('sim-overlay').textContent = 'Satz ' + CURSEG + ' / ' + MAXSEG + '\nZ = ' + zStr;
+    buildSimGeometry(PARSED, CURLAYER, CUMULATIVE, CURSEG);
+    if (window.ED && seg) { ED.revealLineInCenter(seg.lineIdx+1); ED.setPosition({lineNumber:seg.lineIdx+1,column:1}); }
+  }
   var speed = parseInt(document.getElementById('speed-slider').value);
   if (speed >= 100) PLAY_RAF = requestAnimationFrame(playStep);
   else { var delay=Math.round((100-speed)*10); PLAY_TIMER=setTimeout(function(){PLAY_TIMER=null;playStep();},delay); }
@@ -2211,6 +2316,16 @@ function toggleTravel() {
   b.textContent='Travel: '+(SHOW_TRAVEL?'ein':'aus');
   b.classList.toggle('active',SHOW_TRAVEL);
   if (PARSED) { buildSimGeometry(PARSED,CURLAYER,CUMULATIVE); updateLegend(); }
+}
+
+function applyExtWidth() {
+  var v = parseFloat(document.getElementById('ext-width-inp').value);
+  if (isNaN(v) || v < 0.05) return;
+  EXT_WIDTH = v;
+  if (PARSED) {
+    if (STEPMODE==='seg') buildSimGeometry(PARSED,CURLAYER,CUMULATIVE,CURSEG);
+    else buildSimGeometry(PARSED,CURLAYER,CUMULATIVE);
+  }
 }
 function setColorMode(m) {
   COLOR_MODE = m;
@@ -2450,3 +2565,4 @@ var SAMPLE_GCODE=[
 </script>
 </body>
 </html>
+
